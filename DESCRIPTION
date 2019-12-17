@@ -1,0 +1,14 @@
+Package: NetworkAnalystR
+Title: A visual analytics platform for comprehensive gene expression profiling & meta-analysis .
+Version: 0.0.0.9000
+Authors@R: c(person("Jianguo", "Xia", email = "jeff.xia@mcgill.ca", role = "aut"), person("Matthew", "Oldach", email = "matthew.oldachh@mcgill.ca", role=c("aut", "cre")))
+Author: Jianguo Xia [aut, cre], Matthew Oldach [aut]
+Description: This package contains the R functions and libraries underlying the popular NetworkAnalyst web server.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
