@@ -36,4 +36,4 @@ Depends:
 VignetteBuilder: knitr
 URL: https://www.networkanalyst.ca/
 BugReports: https://github.com/xia-lab/NetworkAnalystR/issues
-
+RoxygenNote: 7.0.2
