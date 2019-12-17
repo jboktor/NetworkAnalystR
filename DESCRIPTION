@@ -35,3 +35,5 @@ Depends:
     R (>= 3.6.1)
 VignetteBuilder: knitr
 URL: https://www.networkanalyst.ca/
+BugReports: https://github.com/xia-lab/NetworkAnalystR/issues
+
