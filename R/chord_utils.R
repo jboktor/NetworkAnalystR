@@ -10,7 +10,7 @@ PrepareChordDataInit<-function(){
   # for instance:
   # a: a unique (no b, no c)
   # ab: a and b, no c
-  newDat <- list();
+  list() ;
   if(anal.type == "metadata"){
     sel.inx <- mdata.all==1;
     sel.nms <- names(mdata.all)[sel.inx];
@@ -33,16 +33,15 @@ PrepareChordDataInit<-function(){
     sel.dats[["meta_dat"]] <- as.character(meta.stat$de);
     venn.genenb[length(venn.genenb) + 1] = length(as.character(meta.stat$de))
   }
-  
+
   chord.list <<- sel.dats;
   chord.genenb <<- venn.genenb
   chord.list.up <<- sel.dats;
   chord.genenb.up <<- venn.genenb
-  return(PrepareChordData());
-}
+  return(PrepareChordData())}
 
 PrepareSelChordData<-function(selectedNms){
-  newDat <- list();
+  list() ;
   sel.nms <- unlist(strsplit(selectedNms, ";"));
   nm.vec <<- sel.nms;
   SelectData();
@@ -63,31 +62,25 @@ PrepareSelChordData<-function(selectedNms){
       venn.genenb[i] = length(as.character(meta.stat$de))
     }
   }
-  
+
   chord.list.up <<- sel.dats;
   chord.genenb.up <<- venn.genenb
-  return(PrepareChordData());
-}
+  return(PrepareChordData())}
 
 GetSelectedDataNamesChord <- function(){
-  return(paste(names(chord.list), collapse=";"));
-}
+  return(paste(names(chord.list), collapse=";"))}
 
 GetSelectedDataGeneNumberChord<- function(){
-  return(paste(chord.genenb, collapse=";"));
-}
+  return(paste(chord.genenb, collapse=";"))}
 
 GetSelectedDataNamesUpdatedChord <- function(){
-  return(paste(names(chord.list.up), collapse=";"));
-}
+  return(paste(names(chord.list.up), collapse=";"))}
 
 GetSelectedDataGeneNumberUpdatedChord <- function(){
-  return(paste(chord.genenb.up, collapse=";"));
-}
+  return(paste(chord.genenb.up, collapse=";"))}
 
 GetChordFileCount <- function(){
-  return(chord_count-1);
-}
+  return(chord_count-1)}
 
 PrepareChordData <-function(){
   if(anal.type == "metadata"){
@@ -95,7 +88,7 @@ PrepareChordData <-function(){
   }else{
     res <- PrepareListChordData();
   }
-  
+
   if(is.null(res)){
     return(0);
   }
@@ -105,7 +98,7 @@ PrepareChordData <-function(){
   sink(fileNm);
   cat(toJSON(chordData));
   sink();
-  
+
   lookup <- res$lookup;
   fileNm2 = paste0("networkanalyst_chord_lookup_",chord_count,".json")
   sink(fileNm2);
@@ -132,15 +125,15 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
   nm.mat <- matrix(NA, nrow=length(nm.used), ncol=length(uniq.enIDs));
   shared.ids <- uniq.enIDs;
   shared.sbls <- doEntrez2SymbolMapping(uniq.enIDs);
-  
+
   dataNms <-nm.used;
   colnames(hit.mat) <- colnames(fc.mat) <- colnames(nm.mat) <- shared.sbls;
   rownames(hit.mat) <- rownames(fc.mat) <- rownames(nm.mat) <- dataNms;
   names(shared.sbls) <- shared.ids;
-  
+
   # push to parent env.
   shared.sbls <<- shared.sbls;
-  
+
   for(i in 1:length(dataNms)){
     nm <- dataNms[i];
     exp.vec <- newDat[[nm]];
@@ -149,17 +142,17 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
     nm.mat[i, hit.inx] <- nm;
     fc.mat[i, hit.inx] <- as.numeric(exp.vec);
   }
-  
+
   ##############Links#######
   ## links & arcs data 
   ###########################
-  
+
   links <- arcs <- list();
-  
+
   # arcs data
   de.num <- apply(hit.mat, 1, sum);
   de.prct <- as.numeric(de.num/sum(de.num));
-  
+
   for(i in 1:length(dataNms)){
     arcs[[i]] <- list(
       name = dataNms[i],
@@ -168,24 +161,24 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
       val = de.prct[i]
     )
   }
-  
+
   # now, get unique names by each inserting in the gene names
   lnk.genes <- colnames(nm.mat);
-  nm.mat <- apply(nm.mat, 1, 
+  nm.mat <- apply(nm.mat, 1,
                   function(x){
-                    gd.hits <- !is.na(x); 
+                    gd.hits <- !is.na(x);
                     x[gd.hits] <-paste(x[gd.hits], "*", lnk.genes[gd.hits], sep="");
                     x;
                   });
-  
+
   nm.mat <- unname(t(nm.mat));
   for(l in 1:nrow(nm.mat)){
-    x <- nm.mat[l,];      
+    x <- nm.mat[l,];
     hit.inx <- !is.na(x);
     links$name <- c(links$name, x[hit.inx]);
-    
+
     y.mat <- nm.mat[,hit.inx,drop=F];
-    new.mat <- apply(y.mat, 2, 
+    new.mat <- apply(y.mat, 2,
                      function(d){
                        myd <- d[-l];
                        if(all(is.na(myd))){ # link to itself?
@@ -196,7 +189,7 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
                      });
     links$imports <- c(links$imports,new.mat);
   }
-  
+
   # need to reformat
   links.new <- list();
   for(l in 1:length(links$name)){
@@ -209,10 +202,10 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
       imports=impt
     )
   }
-  
+
   ###################
   #colors & labels
-  require(RColorBrewer);  
+  require(RColorBrewer);
   if(length(dataNms) > 9){
     colors <- brewer.pal(length(dataNms),"Set3");
   }else if (length(dataNms) > 2){
@@ -222,32 +215,32 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
   }
   labels <- rep("", length(dataNms));
   names(labels) <- names(colors) <- dataNms;
-  
+
   ###################
   # links done!, now get weights/pvalues/data for every pairs of chord
   dataNms <- rownames(fc.mat);
   geneNms <- colnames(fc.mat);
   entrezIDs <- names(shared.sbls);
   weights <- data <- list();
-  
+
   # also need to setup lookup json
   lookup <- list();
   for(i in 1:length(dataNms)){
-    nlst <- vector(length = length(dataNms)-1, mode = "list"); 
+    nlst <- vector(length = length(dataNms)-1, mode = "list");
     nm <- dataNms[i];
     names(nlst) <- dataNms[-i]
     lookup[[nm]] <- nlst;
   }
-  
+
   item.count <- 0;
   for(i in 1:ncol(nm.mat)){
-    geneNm <- geneNms[i]; 
+    geneNm <- geneNms[i];
     entrez <- entrezIDs[i];
     hit.inx <- !is.na(nm.mat[,i]);
     fc.vals <- as.numeric(fc.mat[hit.inx,i]);
-    
+
     datNms <- dataNms[hit.inx];
-    
+
     if(length(datNms) == 1){
       item.count <- item.count + 1;
       id <-paste(datNms,"*",datNms,"*",geneNm, sep="")
@@ -269,16 +262,16 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
     }else{
       for(m in 1:(length(datNms)-1)){
         nm1 <- datNms[m];
-        fc1 <- fc.vals[m];
+        fc.vals[m];
         for(n in (m+1):length(datNms)){
           item.count <- item.count + 1;
           nm2 <- datNms[n];
-          fc2 <- fc.vals[n];
+          fc.vals[n];
           id1<- paste(nm1,"*",nm2,"*",geneNm, sep="");
           id2<- paste(nm2,"*",nm1,"*",geneNm, sep="");
           wt <- 1;
           weights[[id1]]<-weights[[id2]]<-1;
-          
+
           lookup[[nm1]][[nm2]][[geneNm]] <- list(
             entrez = entrez,
             genesymbol = geneNm,
@@ -313,7 +306,7 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
       }
     }
   }
-  
+
   # need to remove 3rd level list name 
   for(m in 1:length(dataNms)){ # need to remove itself
     nm1 <- dataNms[m];
@@ -323,7 +316,7 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
       lookup[[nm1]][[nm2]] <- lookup[[nm2]][[nm1]] <- unname(nlist);
     }
   }
-  
+
   chordData <- list(
     arcs = arcs,
     links = links.new,
@@ -332,27 +325,26 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs){
     colors = colors,
     labels = labels
   )
-  
+
   return (
     list(
       chordData = chordData,
       lookup = lookup
     )
-  );
-}
+  )}
 
 PrepareMetaChordData <- function(){
   BHth <- GlobalCutOff$BHth;
   logFC <- GlobalCutOff$logFC;
   sel.nms <- names(mdata.all)[mdata.all==1];
   row.nm <- length(sel.nms);
-  
+
   # update inmex.ind for only selected dataset
   hit.inx <-  names(inmex.ind) %in% sel.nms;
   inmex.ind <- inmex.ind[hit.inx];
   dataNms <- names(inmex.ind);
   newNms <- substring(dataNms,0, nchar(dataNms)-4);
-  
+
   if(meta.selected){
     newNms <- c(newNms, "meta");
     row.nm <- row.nm + 1;
@@ -362,10 +354,10 @@ PrepareMetaChordData <- function(){
   nm.mat <- matrix(NA, nrow=row.nm, ncol=nrow(inmex.meta$data));
   shared.ids <- rownames(inmex.meta$data);
   shared.sbls <- inmex.meta$gene.symbls;
-  
+
   colnames(hit.mat) <- colnames(nm.mat) <- shared.sbls;
   rownames(hit.mat) <- rownames(nm.mat) <- newNms;
-  
+
   chord.vec.nms <- newNms;
   chord.res <- list();
   tot.count <- 0; # need to see how many chords
@@ -379,7 +371,7 @@ PrepareMetaChordData <- function(){
     chord.res[[nm]] <- shared.sbls[hit.inx];
     tot.count <- tot.count + sum(hit.inx);
   }
-  
+
   if(meta.selected){# add meta
     i  <- length(inmex.ind) + 1;
     hit.inx <- shared.ids %in% meta.stat$de;
@@ -388,28 +380,28 @@ PrepareMetaChordData <- function(){
     chord.res[[newNms[i]]] <- shared.sbls[hit.inx];
     tot.count <- tot.count + sum(hit.inx);
   }
-  
+
   if(tot.count > 2000){
-    current.msg <<- paste("Chord diagrams is effective to display relationships for less than 1000 genes. The results contain", tot.count, 
+    current.msg <<- paste("Chord diagrams is effective to display relationships for less than 1000 genes. The results contain", tot.count,
                           "of genes (max. allowed: 2000). You can try Venn diagram or adjust threshold to select most significant genes.")
     print(current.msg);
     return(NULL);
   }
-  
+
   # keep gene with at least 1 hit across all datasets
   keep.inx <- apply(hit.mat, 2, sum) > 0;
   hit.mat <- hit.mat[,keep.inx];
   nm.mat <- nm.mat[,keep.inx];
   shared.sbls <- shared.sbls[keep.inx];
-  
+
   ##############Links#######
   #links & arcs data 
   links <- arcs <- list();
-  
+
   # arcs data
   de.num <- apply(hit.mat, 1, sum);
   de.prct <- as.numeric(de.num/sum(de.num));
-  
+
   for(i in 1:length(newNms)){
     arcs[[i]] <- list(
       name = newNms[i],
@@ -418,24 +410,24 @@ PrepareMetaChordData <- function(){
       val = de.prct[i]
     )
   }
-  
+
   # now, get unique names by each inserting in the gene names
   lnk.genes <- colnames(nm.mat);
-  nm.mat <- apply(nm.mat, 1, 
+  nm.mat <- apply(nm.mat, 1,
                   function(x){
-                    gd.hits <- !is.na(x); 
+                    gd.hits <- !is.na(x);
                     x[gd.hits] <-paste(x[gd.hits], "*", lnk.genes[gd.hits], sep="");
                     x;
                   });
-  
+
   nm.mat <- unname(t(nm.mat));
   for(l in 1:nrow(nm.mat)){
-    x <- nm.mat[l,];      
+    x <- nm.mat[l,];
     hit.inx <- !is.na(x);
     links$name <- c(links$name, x[hit.inx]);
-    
+
     y.mat <- nm.mat[,hit.inx,drop=F];
-    new.mat <- apply(y.mat, 2, 
+    new.mat <- apply(y.mat, 2,
                      function(d){
                        myd <- d[-l];
                        if(all(is.na(myd))){ # link to itself?
@@ -446,7 +438,7 @@ PrepareMetaChordData <- function(){
                      });
     links$imports <- c(links$imports,new.mat);
   }
-  
+
   # need to reformat
   links.new <- list();
   for(l in 1:length(links$name)){
@@ -459,10 +451,10 @@ PrepareMetaChordData <- function(){
       imports=impt
     )
   }
-  
+
   ###################
   #colors & labels
-  require(RColorBrewer);  
+  require(RColorBrewer);
   if(length(newNms) > 9){
     colors <- brewer.pal(length(newNms),"Set3");
   }else if (length(newNms) > 2){
@@ -472,30 +464,30 @@ PrepareMetaChordData <- function(){
   }
   labels <- rep("", length(newNms));
   names(labels) <- names(colors) <- newNms;
-  
+
   ###################
   # links done!, now get pvalues/data for every pairs of chord
   dataNms <- rownames(hit.mat);
   geneNms <- colnames(hit.mat);
   entrezIDs <- names(shared.sbls);
   weights <- data <- list();
-  
+
   # also need to setup lookup json
   lookup <- list();
   for(i in 1:length(dataNms)){
-    nlst <- vector(length = length(dataNms)-1, mode = "list"); 
+    nlst <- vector(length = length(dataNms)-1, mode = "list");
     nm <- dataNms[i];
     names(nlst) <- dataNms[-i]
     lookup[[nm]] <- nlst;
   }
-  
+
   item.count <- 0;
   for(i in 1:ncol(nm.mat)){
-    geneNm <- geneNms[i]; 
+    geneNm <- geneNms[i];
     entrez <- entrezIDs[i];
     hit.inx <- !is.na(nm.mat[,i]);
     datNms <- dataNms[hit.inx];
-    
+
     if(length(datNms) == 1){
       item.count <- item.count + 1;
       id <-paste(datNms,"*",datNms,"*",geneNm, sep="");
@@ -520,7 +512,7 @@ PrepareMetaChordData <- function(){
           id1<- paste(nm1,"*",nm2,"*",geneNm, sep="");
           id2<- paste(nm2,"*",nm1,"*",geneNm, sep="");
           weights[[id1]]<-weights[[id2]]<-1;
-          
+
           lookup[[nm1]][[nm2]][[geneNm]] <- list(
             entrez = entrez,
             genesymbol = geneNm
@@ -551,7 +543,7 @@ PrepareMetaChordData <- function(){
       }
     }
   }
-  
+
   # need to remove 3rd level list name 
   for(m in 1:length(dataNms)){ # need to remove itself
     nm1 <- dataNms[m];
@@ -561,7 +553,7 @@ PrepareMetaChordData <- function(){
       lookup[[nm1]][[nm2]] <- lookup[[nm2]][[nm1]] <- unname(nlist);
     }
   }
-  
+
   chordData <- list(
     arcs = arcs,
     links = links.new,
@@ -570,10 +562,10 @@ PrepareMetaChordData <- function(){
     colors = colors,
     labels = labels
   )
-  
+
   chord.vec.nms <<- chord.vec.nms;
   chord.res <<- chord.res;
-  
+
   return (
     list(
       chordData = chordData,
@@ -587,11 +579,10 @@ PerformChordEnrichment <- function(file.nm, fun.type, IDs){
   sym.vec <- doEntrez2SymbolMapping(gene.vec);
   names(gene.vec) <- sym.vec;
   res <- PerformEnrichAnalysis(file.nm, fun.type, gene.vec);
-  return(res);
-}
+  return(res)}
 
 PrepareListChordData <- function(){
-  
+
   all.enIDs <- NULL;
   newDat <- list();
   tot.count <- 0;
@@ -600,22 +591,21 @@ PrepareListChordData <- function(){
     dataNm <- all.nms[i];
     dataSet <- readRDS(dataNm);
     gene.mat <- dataSet$prot.mat;
-    
+
     # convert to entrez
     expr.val <- gene.mat[,1];
     en.ids <- rownames(gene.mat);
-    
+
     names(expr.val) <- en.ids;
     newDat[[dataNm]] <- expr.val;
-    
+
     all.enIDs <- c(all.enIDs, en.ids);
     tot.count <- tot.count + nrow(gene.mat);
-    
+
     if(tot.count > 2000){
-      current.msg <<- paste("Chord diagrams is effective to display relationships for less than 1000 items. The results contain", tot.count, 
+      current.msg <<- paste("Chord diagrams is effective to display relationships for less than 1000 items. The results contain", tot.count,
                             "of genes (max. allowed: 2000). You can try Venn diagram instead.")
-      return(NULL);
-    }
+      return(NULL)    }
   }
   PrepareChordDataFromList(newDat, unique(all.enIDs));
 }
@@ -627,7 +617,7 @@ CalculateDEgeneSet <- function(nms, operation, refNm, filenm){
   }else{
     com.smbls <- PerformSetOperation_List(nms, operation, refNm);
   }
-  
+
   sink(filenm);
   cat(toJSON(com.smbls));
   sink();
@@ -663,14 +653,13 @@ PerformSetOperation_List <- function(nms, operation, refNm){
     ids <- unique(unlist(ids.list));
     com.ids <-setdiff(dataSet$GeneAnotDB[,"gene_id"], ids);
   }
-  
+
   com.ids <- as.character(com.ids[!is.na(com.ids)]); # make sure it is interpreted as name not index
   com.symbols <- doEntrez2SymbolMapping(com.ids);
   names(com.symbols) = com.ids
-  
+
   com.symbols<-com.symbols[!is.null(com.symbols)];
-  return(com.symbols);
-}
+  return(com.symbols)}
 
 PerformSetOperation_Data <- function(nms, operation, refNm){
   include.inx <- chord.vec.nms %in% nms;
@@ -702,8 +691,7 @@ PerformSetOperation_Data <- function(nms, operation, refNm){
     dataSet <- readRDS(refNm);
     ids <- unique(unlist(ids.list));
     com.ids <-setdiff(rownames(dataSet$sig.mat), ids);
-  } 
+  }
   com.symbols <- doEntrez2SymbolMapping(com.ids);
   names(com.symbols) = com.ids;
-  return(com.symbols);
-}
+  return(com.symbols)}
