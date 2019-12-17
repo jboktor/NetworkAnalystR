@@ -10,12 +10,11 @@
 # convert to Seurat object which
 # contains a matrix of counts and metadata
 ReadTabExpressData_sc <- function(fileName) {
-  if(missing(fileName)){
-    msg <- paste0("The required count table was not provided. Please select a valid file.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0);
-
+  if (missing(fileName)) {
+    msg <- paste0("The required count table was not provided. Please select a valid file.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
   } # was the required argument supplied?
 
   dataSet <- .readTabData(fileName)
@@ -123,8 +122,8 @@ PerformDataAnnot_sc <- function(org, dataType, idType, lvlOpt) {
       current.msg <<- paste("Only ", perct, "% ID were matched. You may want to choose another ID type or use default.", sep = "")
     } else {
       current.msg <<- paste("ID annotation: ", "Total [", length(anot.id),
-                            "] Matched [", matched.len, "] Unmatched [", sum(!hit.inx), "]",
-                            collapse = "\n"
+        "] Matched [", matched.len, "] Unmatched [", sum(!hit.inx), "]",
+        collapse = "\n"
       )
 
       if (lvlOpt != "NA" | idType == "entrez") {
@@ -142,9 +141,9 @@ PerformDataAnnot_sc <- function(org, dataType, idType, lvlOpt) {
         data.anot$entrez <- c(matched.entrez, unmatched.entrez)
 
         if (lvlOpt == "mean") {
-          data.anot <- aggregate(data.anot[, -which(names(data.anot) %in% "entrez")], by=list(entrez=data.anot$entrez), FUN=mean)
+          data.anot <- aggregate(data.anot[, -which(names(data.anot) %in% "entrez")], by = list(entrez = data.anot$entrez), FUN = mean)
         } else {
-          data.anot <- aggregate(data.anot[, -which(names(data.anot) %in% "entrez")], by=list(entrez=data.anot$entrez), FUN=sum)
+          data.anot <- aggregate(data.anot[, -which(names(data.anot) %in% "entrez")], by = list(entrez = data.anot$entrez), FUN = sum)
         }
         rownames(data.anot) <- data.anot$entrez
         data.anot <- data.anot[, -which(names(data.anot) %in% "entrez")]
@@ -184,8 +183,8 @@ PerformDataAnnot_sc <- function(org, dataType, idType, lvlOpt) {
 }
 
 MakeSeuratObject <- function(min.cells = min.cells, min.features = min.features, filterUnmapped = true) {
-  min.cells = as.numeric(min.cells)
-  min.features = as.numeric(min.features)
+  min.cells <- as.numeric(min.cells)
+  min.features <- as.numeric(min.features)
 
   if (missing(min.cells)) {
     msg <- paste0("Please provide a valid 'min.cells' value.")
@@ -221,18 +220,18 @@ MakeSeuratObject <- function(min.cells = min.cells, min.features = min.features,
   }
 
   library(Seurat)
-  if(filterUnmapped == "false"){
-    dataSet <- readRDS("data.proc.rds");
+  if (filterUnmapped == "false") {
+    dataSet <- readRDS("data.proc.rds")
   } else {
-    dataSet <- readRDS("annotation.rds");
+    dataSet <- readRDS("annotation.rds")
   }
 
   dataSet <- CreateSeuratObject(counts = dataSet, min.cells = min.cells, min.features = min.features) # add nCount_RNA & nFeature_RNA
 
   dataSet[["percent.mt"]] <- PercentageFeatureSet(dataSet, pattern = "^MT-") # add percentage mitochondria - remove this!
 
-  saveRDS(dataSet, "data.seurat.rds");
-  return(1);
+  saveRDS(dataSet, "data.seurat.rds")
+  return(1)
 }
 
 # show counts vs gene per cell
@@ -243,8 +242,8 @@ PlotCellSummary <- function(imgNm, dpi, format) {
     norm.msg <<- current.msg <<- msg
     return(0)
   }
-  dpi = as.numeric(dpi);
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
 
 
   counts <- data.table::fread("data_processed.csv")
@@ -264,7 +263,7 @@ PlotCellSummary <- function(imgNm, dpi, format) {
     genes_per_cell = colSums(counts > 0)
   )
 
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
   plot(plot_cell$counts_per_cell, plot_cell$genes_per_cell, log = "xy", col = "#F8766D", pch = 16)
   title("counts vs genes per cell")
 
@@ -279,13 +278,13 @@ PlotQC <- function(imgNm, dpi, format) {
     norm.msg <<- current.msg <<- msg
     return(0)
   }
-  dpi = as.numeric(dpi)
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
 
   library("Seurat")
   dataSet <- readRDS("data.seurat.rds")
 
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
   g <- VlnPlot(dataSet, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
   print(g)
   dev.off()
@@ -299,14 +298,14 @@ PlotScatter <- function(imgNm, dpi, format) {
     norm.msg <<- current.msg <<- msg
     return(0)
   }
-  dpi = as.numeric(dpi)
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
 
   library("Seurat")
 
   dataSet <- readRDS("data.seurat.rds")
 
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
   plot1 <- FeatureScatter(dataSet, feature1 = "nCount_RNA", feature2 = "percent.mt")
   plot2 <- FeatureScatter(dataSet, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
   g <- CombinePlots(plots = list(plot1, plot2))
@@ -462,29 +461,30 @@ PerformExpressNormalization_sc <- function(norm.opt = norm.opt, feature.min = 20
   # save normalized data for download user option
   saveRDS(dataSet, "data.normalized.rds") # save Seurat object
   data.table::fwrite(as.data.frame(dataSet@assays[["RNA"]]@scale.data), file = "data_normalized.csv") # save count matrix
-  return(1);
+  return(1)
 }
 
 # elbow plot
 PlotElbow <- function(imgNm, dpi, format) {
-  if(missing(imgNm)){
-    msg <- paste0("Please provide a vaild 'imgNm'.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0)  }
-  dpi = as.numeric(dpi)
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  if (missing(imgNm)) {
+    msg <- paste0("Please provide a vaild 'imgNm'.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
+  }
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
 
   library(Seurat)
   dataSet <- readRDS("data.normalized.rds")
 
   g <- ElbowPlot(dataSet)
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
   print(g)
   dev.off()
 }
 
-ChoosePCS <- function(){
+ChoosePCS <- function() {
   library(Seurat)
   dataSet <- readRDS("data.normalized.rds")
   if (scale == TRUE) {
@@ -503,39 +503,45 @@ ChoosePCS <- function(){
 }
 
 PlotTSNE <- function(imgNm, dpi, format) {
-  if(missing(imgNm)){
-    msg <- paste0("Please provide a vaild 'imgNm'.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0)  }
-  dpi = as.numeric(dpi)
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  if (missing(imgNm)) {
+    msg <- paste0("Please provide a vaild 'imgNm'.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
+  }
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
 
   library(Seurat)
   dataSet <- readRDS("data.pcs.rds")
 
   ## Rather than naively trying a loop that trys smaller values of perplexity (from 50 -> 5)
   ## lets write a function that calls the function we're interested in, that returns
-  ## a numerical value indicating how close on is to the "best" result achievable 
+  ## a numerical value indicating how close on is to the "best" result achievable
   ## (e.g. largest perplexity value that returns a computed result)
   f <- function(i) {
     zzz <- try(RunTSNE(object = dataSet, dims.use = 1:10, do.fast = TRUE, perplexity = i), TRUE)
-    if(class(zzz) == 'try-error') "ok!" else {
+    if (class(zzz) == "try-error") {
+      "ok!"
+    } else {
       stop("yuck")
     }
   }
 
   g <- function(i) {
-    tryCatch({
-      f(i)
-      i
-    }, error = function(e) {
-      0
-    })
+    tryCatch(
+      {
+        f(i)
+        i
+      },
+      error = function(e) {
+        0
+      }
+    )
   }
 
-  z <- sapply(70:5, g)  # if you find this erroring-out improve code logic here
-  z <- z[z>0]
+  z <- sapply(70:5, g) # if you find this erroring-out improve code logic here
+  z <- z[z > 0]
   h <- min(z) - 1
   dataSet <- RunTSNE(object = dataSet, dims.use = 1:10, do.fast = TRUE, perplexity = h)
 
@@ -543,7 +549,7 @@ PlotTSNE <- function(imgNm, dpi, format) {
 
   g <- DimPlot(object = dataSet, reduction = "tsne") # note that you can set do.label=T to help label individual clusters
 
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
 
   print(g)
 
@@ -552,13 +558,14 @@ PlotTSNE <- function(imgNm, dpi, format) {
 
 # umap of scaled data
 PlotUmap <- function(imgNm, dpi, format) {
-  if(missing(imgNm)){
-    msg <- paste0("Please provide a vaild 'imgNm'.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0)  }
-  dpi = as.numeric(dpi)
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  if (missing(imgNm)) {
+    msg <- paste0("Please provide a vaild 'imgNm'.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
+  }
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
 
   library("Seurat")
   dataSet <- readRDS("data.tSNE.rds")
@@ -572,7 +579,7 @@ PlotUmap <- function(imgNm, dpi, format) {
 
   g <- DimPlot(dataSet, reduction = "umap", split.by = "seurat_clusters")
 
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
 
   print(g)
 
@@ -581,13 +588,14 @@ PlotUmap <- function(imgNm, dpi, format) {
 
 # calculate a subset of features that exhibit high cell-to-cell variation in the dataset
 PlotHvfs <- function(imgNm, dpi, format) {
-  if(missing(imgNm)){
-    msg <- paste0("Please provide a vaild 'imgNm'.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0)  }
-  dpi = as.numeric(dpi)
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+  if (missing(imgNm)) {
+    msg <- paste0("Please provide a vaild 'imgNm'.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
+  }
+  dpi <- as.numeric(dpi)
+  imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
   library("Seurat")
 
   dataSet <- readRDS("data.tSNE.rds")
@@ -599,7 +607,7 @@ PlotHvfs <- function(imgNm, dpi, format) {
   plot1 <- VariableFeaturePlot(dataSet)
   g <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
 
-  Cairo(file=imgNm, width=600*dpi/72, height=450*dpi/72, type=format, bg="white", dpi=dpi, unit="px");
+  Cairo(file = imgNm, width = 600 * dpi / 72, height = 450 * dpi / 72, type = format, bg = "white", dpi = dpi, unit = "px")
 
   print(g)
 
@@ -607,13 +615,14 @@ PlotHvfs <- function(imgNm, dpi, format) {
 }
 
 # note, setup the main class, keep the original order
-SetMainClass_sc<-function(){
+SetMainClass_sc <- function() {
   dataSet <- readRDS("data.tSNE.rds")
   lbls <- factor(dataSet@meta.data[["seurat_clusters"]])
-  lvls.orig <- unique(lbls);
-  cls <- factor(lbls, levels=lvls.orig, ordered=T);
-  cls; # record main cls
-  return(levels(cls))}
+  lvls.orig <- unique(lbls)
+  cls <- factor(lbls, levels = lvls.orig, ordered = T)
+  cls # record main cls
+  return(levels(cls))
+}
 
 # perform differential analysis
 # default: compare one group against all other cells
@@ -625,16 +634,16 @@ PerformDEAnal_sc <- function(imgNm, anal.type = "default", par1 = NULL, par2 = N
   dataSet <- readRDS("data.tSNE.rds")
 
   if (anal.type != "default" && anal.type != "cluster" && method != "RC") {
-    msg <- paste0("Please provide a vaild 'anal.type'.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0);
+    msg <- paste0("Please provide a vaild 'anal.type'.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
   }
   if (test.use != "wilcox" && test.use != "bimod" && test.use != "t" && test.use != "negbinom" && test.use != "poisson" && test.use != "LR" && test.use != "MAST" && test.use != "DESeq2" && test.use != "roc") {
-    msg <- paste0("Please provide a vaild DE test in 'test.use'.");
-    print(msg);
-    norm.msg <<- current.msg <<- msg;
-    return(0);
+    msg <- paste0("Please provide a vaild DE test in 'test.use'.")
+    print(msg)
+    norm.msg <<- current.msg <<- msg
+    return(0)
   }
   if (anal.type == "default") {
     # find topFeatures for every cluster compared to all remaining cells, report only the positive one
@@ -687,48 +696,49 @@ PerformDEAnal_sc <- function(imgNm, anal.type = "default", par1 = NULL, par2 = N
 }
 
 # update result based on new cutoff
-GetSigGenes_sc <-function(res.nm, p.lvl, fc.lvl, update=T, inx){
+GetSigGenes_sc <- function(res.nm, p.lvl, fc.lvl, update = T, inx) {
   resTable <- data.table::fread("candidate-marker-genes.txt")
   dataSet <- readRDS("data.tSNE.rds")
-  total = nrow(dataSet)
-  filename <- filename;
+  total <- nrow(dataSet)
+  filename <- filename
 
-  if (nrow(resTable) == 0){
-    current.msg <<- paste(current.msg, "No significant genes were identified using the given design and cutoff.");
+  if (nrow(resTable) == 0) {
+    current.msg <<- paste(current.msg, "No significant genes were identified using the given design and cutoff.")
   }
 
-  resTable <- resTable[ which(resTable$p_val_adj < p.lvl),]
+  resTable <- resTable[ which(resTable$p_val_adj < p.lvl), ]
 
-  de.Num <- nrow(resTable);
+  de.Num <- nrow(resTable)
 
   # display at most 5000 genes for the server (two main reasons)
   # 1) should not have more 22% (human: 23000) DE of all genes (biological)
   # 2) IE canvas can display no more than 6800 pixels (computational)
-  if (nrow(resTable) > 5000){
-    resTable <- resTable[1:5000,];
-    current.msg <<- paste(current.msg, " Due to computational constraints, only top 5000 genes will be used. ", collapse="\n");
+  if (nrow(resTable) > 5000) {
+    resTable <- resTable[1:5000, ]
+    current.msg <<- paste(current.msg, " Due to computational constraints, only top 5000 genes will be used. ", collapse = "\n")
   }
 
-  saveRDS(data, file="data.stat");
+  saveRDS(data, file = "data.stat")
 
-  anot.id <- rownames(resTable);
-  doEntrezIDAnot(anot.id) ;
+  anot.id <- rownames(resTable)
+  doEntrezIDAnot(anot.id)
   # save here!?
 
-  gene <- rownames(resTable);
-  logFC <- resTable$avg_logFC;
+  gene <- rownames(resTable)
+  logFC <- resTable$avg_logFC
 
-  geneList <- paste(gene, logFC, collapse="\n");
-  resTable[ which(resTable$p_val_adj < p.lvl),]
-  up = nrow(resTable[ which(resTable$avg_logFC > 2),])
-  down = nrow(resTable[ which(resTable$avg_logFC < 2),])
+  geneList <- paste(gene, logFC, collapse = "\n")
+  resTable[ which(resTable$p_val_adj < p.lvl), ]
+  up <- nrow(resTable[ which(resTable$avg_logFC > 2), ])
+  down <- nrow(resTable[ which(resTable$avg_logFC < 2), ])
 
-  dataSet <<- dataSet;
+  dataSet <<- dataSet
 
-  lst = list(colnames(dataSet), dataSet@assays[["RNA"]]@scale.data, data.frame(CLASS = dataSet@meta.data[["seurat_clusters"]]), resTable, rownames(dataSet), org=data.org)
+  lst <- list(colnames(dataSet), dataSet@assays[["RNA"]]@scale.data, data.frame(CLASS = dataSet@meta.data[["seurat_clusters"]]), resTable, rownames(dataSet), org = data.org)
 
   require(RJSONIO)
-  json.obj <- toJSON(lst);
-  sink("NetworkAnalyst_matrix.json");
-  cat(json.obj);
-  return(c(filename, de.Num, geneList, total, up, down))}
+  json.obj <- toJSON(lst)
+  sink("NetworkAnalyst_matrix.json")
+  cat(json.obj)
+  return(c(filename, de.Num, geneList, total, up, down))
+}
