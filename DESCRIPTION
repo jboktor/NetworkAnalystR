@@ -31,4 +31,6 @@ Suggests:
     devtools,
     testthat,
     reshape2
+Depends:
+    R (>= 3.6.1)
 VignetteBuilder: knitr
