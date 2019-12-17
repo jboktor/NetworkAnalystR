@@ -25,3 +25,6 @@ vignettes/*.pdf
 
 # Data
 data
+
+# Work In Progress
+rmd/code-optimization.Rmd
