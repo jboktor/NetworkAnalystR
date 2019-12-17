@@ -7,8 +7,28 @@ Description: This package contains the R functions and libraries underlying the 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Imports:
+    RJSONIO,
+    RColorBrewer,
+    limma,
+    preprocessCore,
+    edgeR,
+    lattice,
+    ggplot2,
+    reshape,
+    ggrepel,
+    Rtsne,
+    Cairo,
+    igraph,
+    fgsea,
+    RSQLite,
+    PCSF,
+    Seurat
 Suggests: 
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    devtools,
+    testthat,
+    reshape2
 VignetteBuilder: knitr
