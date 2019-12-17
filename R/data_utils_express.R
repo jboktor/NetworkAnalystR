@@ -547,7 +547,7 @@ GetSigGenes <- function(res.nm, p.lvl, fc.lvl, update = T, inx) {
   data.norm <- dataSet$data.norm
   colnames(data.norm) <- NULL
   lst <- list(colnames(dataSet$data.norm), data.norm, dataSet$meta.info, dataSet$resTable, rownames(data.norm), org = data.org)
-  require(RJSONIO)
+  library(RJSONIO)
   json.obj <- toJSON(lst)
   sink("NetworkAnalyst_matrix.json")
   cat(json.obj)
@@ -724,9 +724,9 @@ qc.boxplot <- function(dat, imgNm, dpi = 72, format = "png") {
 qc.pcaplot <- function(x, imgNm, dpi = 72, format = "png", factor) {
   dpi <- as.numeric(dpi)
   imgNm <- paste(imgNm, "dpi", dpi, ".", format, sep = "")
-  require("lattice")
-  require("ggplot2")
-  require("reshape")
+  library("lattice")
+  library("ggplot2")
+  library("reshape")
   pca <- prcomp(t(na.omit(x)))
   imp.pca <- summary(pca)$importance
   xlabel <- paste0("PC1", " (", 100 * round(imp.pca[2, ][1], 3), "%)")
@@ -851,8 +851,8 @@ PlotLibSizeView <- function(imgNm, dpi = 72, format = "png", factor) {
 }
 
 PlotMDS <- function(imgName, format) {
-  require(edgeR)
-  require(RColorBrewer)
+  library(edgeR)
+  library(RColorBrewer)
   imgName <- paste(imgName, "dpi", dpi, ".", format, sep = "")
   Cairo(file = imgName, width = 580, type = format, bg = "white", dpi = 72)
   levels(dataSet$cls) <- brewer.pal(nlevels(dataSet$cls), "Set1")
@@ -889,7 +889,7 @@ GetDensityPlot <- function() {
     density = densityList,
     class = dataSet$cls
   )
-  require(RJSONIO)
+  library(RJSONIO)
   json.obj <- toJSON(lst)
   sink(jsonNm)
   cat(json.obj)
@@ -1052,7 +1052,7 @@ Volcano.Anal <- function(paired = FALSE, fcthresh, threshp, analType, inx) {
 
   fileName <- "volcano.csv"
   jsonNm <- "volcano.json"
-  require(RJSONIO)
+  library(RJSONIO)
   json.obj <- toJSON(sig.var1)
   sink(jsonNm)
   cat(json.obj)
@@ -1075,13 +1075,11 @@ Volcano.Anal <- function(paired = FALSE, fcthresh, threshp, analType, inx) {
     conv = gene.anot
   )
 
-  require(RJSONIO)
+  library(RJSONIO)
   json.obj <- toJSON(volcano)
   sink("volcano2.json")
   cat(json.obj)
   sink()
-
-  require(RJSONIO)
 
   if (init.lib == "NA") {
     enr.mat <- "NA"
@@ -1140,7 +1138,7 @@ PerformLimmaDE <- function(dataName, grps, p.lvl, fc.lvl = NULL) {
 # perfor differential analysis for array/RNA seq data
 # for two groups only (used for meta-analysis)
 PerformLimma <- function(data, group) {
-  require(limma)
+  library(limma)
   data <- data
   design <- model.matrix(~ -1 + group)
   fit <- lmFit(data, design)
@@ -1167,7 +1165,7 @@ GetLimmaResTable <- function(fit.obj) {
 # given a gene id, plot its expression profile as box plot
 PlotSelectedGene <- function(gene.id, type) {
   imgName <- paste("Gene_", gene.id, ".png", sep = "")
-  require(lattice)
+  library(lattice)
   if (anal.type == "onedata") {
     ids <- rownames(dataSet$resTable)
     inx <- which(ids == gene.id)
@@ -1279,7 +1277,7 @@ PlotSelectedGeneMeta <- function(gene.id) {
   }
 
   imgName <- paste("Gene_", gene.id, ".png", sep = "")
-  require(lattice)
+  library(lattice)
 
   num <- sum(mdata.all == 1)
   # calculate width based on the dateset number
@@ -1349,7 +1347,7 @@ SaveHeatmapJSON <- function(fileName) {
     json.res <- PrepareExpressHeatmapJSON()
   }
 
-  require(RJSONIO)
+  library(RJSONIO)
   json.mat <- toJSON(json.res, .na = "null")
   sink(fileName)
   cat(json.mat)
@@ -1595,7 +1593,7 @@ SaveExpressClusterLoadingJSON <- function(fileName, clustOpt, nb) {
   rownames(mypos) <- pca3d$score$name
 
   write.csv(mypos, file = "networkanalyst_3d_load_pos.csv")
-  require(RJSONIO)
+  library(RJSONIO)
   json.mat <- toJSON(pca3d, .na = "null")
   sink(fileName)
   cat(json.mat)
@@ -1678,7 +1676,7 @@ SaveExpressClusterJSON <- function(fileName, clustOpt, opt) {
   rownames(mypos) <- colnames(dataSet$data.norm)
 
   write.csv(mypos, file = "networkanalyst_3d_pos.csv")
-  require(RJSONIO)
+  library(RJSONIO)
   json.mat <- toJSON(pca3d, .na = "null")
   sink(fileName)
   cat(json.mat)

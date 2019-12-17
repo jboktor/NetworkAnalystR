@@ -736,7 +736,7 @@ GetSigGenes_sc <- function(res.nm, p.lvl, fc.lvl, update = T, inx) {
 
   lst <- list(colnames(dataSet), dataSet@assays[["RNA"]]@scale.data, data.frame(CLASS = dataSet@meta.data[["seurat_clusters"]]), resTable, rownames(dataSet), org = data.org)
 
-  require(RJSONIO)
+  library(RJSONIO)
   json.obj <- toJSON(lst)
   sink("NetworkAnalyst_matrix.json")
   cat(json.obj)

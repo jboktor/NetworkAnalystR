@@ -99,7 +99,7 @@ PrepareChordData <- function() {
   if (is.null(res)) {
     return(0)
   }
-  require(RJSONIO)
+  library(RJSONIO)
   chordData <- res$chordData
   fileNm <- paste0("networkanalyst_chorddata_", chord_count, ".json")
   sink(fileNm)
@@ -216,7 +216,7 @@ PrepareChordDataFromList <- function(newDat, uniq.enIDs) {
 
   ###################
   # colors & labels
-  require(RColorBrewer)
+  library(RColorBrewer)
   if (length(dataNms) > 9) {
     colors <- brewer.pal(length(dataNms), "Set3")
   } else if (length(dataNms) > 2) {
@@ -472,7 +472,7 @@ PrepareMetaChordData <- function() {
 
   ###################
   # colors & labels
-  require(RColorBrewer)
+  library(RColorBrewer)
   if (length(newNms) > 9) {
     colors <- brewer.pal(length(newNms), "Set3")
   } else if (length(newNms) > 2) {

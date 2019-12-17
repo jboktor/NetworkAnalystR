@@ -7,7 +7,7 @@
 ###################################################
 
 ReadGraphFile <- function(fileName, fileType) {
-  require("igraph")
+  library("igraph")
   types_arr <<- ""
 
   fileTypeu <<- fileType
@@ -195,7 +195,7 @@ convertIgraph2JSONFromFile <- function(net.nm, filenm) {
   centered <- T
   notcentered <- F
   # update node color based on betweenness
-  require("RColorBrewer")
+  library("RColorBrewer")
   topo.val <- log(node.btw + 1)
   topo.colsb <- ComputeColorGradient(topo.val, "black", notcentered)
   topo.colsw <- ComputeColorGradient(topo.val, "white", notcentered)
@@ -275,7 +275,7 @@ convertIgraph2JSONFromFile <- function(net.nm, filenm) {
   nd.tbl <- nd.tbl[ord.inx, ]
   write.csv(nd.tbl, file = "node_table.csv", row.names = FALSE)
   # covert to json
-  require(RJSONIO)
+  library(RJSONIO)
   netData <- list(nodes = nodes, edges = edge.mat)
   netUploadU <<- 1
   sink(filenm)

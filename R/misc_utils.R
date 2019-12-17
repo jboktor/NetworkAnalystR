@@ -214,7 +214,7 @@ GetBashFullPath <- function() {
 ########################################
 # note, last two par only for STRING database
 QueryPpiSQLite <- function(table.nm, q.vec, requireExp, min.score) {
-  require("RSQLite")
+  library("RSQLite")
   ppi.db <- dbConnect(SQLite(), paste(sqlite.path, "ppi.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
 
@@ -316,8 +316,8 @@ PerformHeatmapEnrichment <- function(file.nm, fun.type, IDs) {
 PrepareEnrichNet <- function(netNm, type, overlapType) {
   hits <- enr.mat[, "Hits"]
   pvals <- enr.mat[, "P.Value"]
-  require(igraph)
-  require(reshape)
+  library(igraph)
+  library(reshape)
   pvalue <- pvals
   id <- names(pvalue)
   readRDS("current_geneset.rds")
@@ -460,7 +460,7 @@ PrepareEnrichNet <- function(netNm, type, overlapType) {
 
   bedge.mat <- get.edgelist(bg)
   bedge.mat <- cbind(id = 1:nrow(bedge.mat), source = bedge.mat[, 1], target = bedge.mat[, 2])
-  require(RJSONIO)
+  library(RJSONIO)
   initsbls <- doEntrez2SymbolMapping(list.genes)
   names(initsbls) <- list.genes
   netData <- list(nodes = nodes, edges = edge.mat, bnodes = bnodes, bedges = bedge.mat, enr = enr.mat, id = rownames(enr.mat), sizes = listSizes, hits = hits.query, genelist = initsbls)

@@ -35,9 +35,9 @@ Init.Data <- function(path = "../../") {
   current.msg <<- ""
 
   # preload some general package
-  require("Cairo")
+  library("Cairo")
   CairoFonts("Arial:style=Regular", "Arial:style=Bold", "Arial:style=Italic", "Helvetica", "Symbol")
-  require("igraph")
+  library("igraph")
   print("called networkanalyst init!")
 }
 

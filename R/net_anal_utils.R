@@ -12,7 +12,7 @@ SearchNetDB <- function(db.type, table.nm, require.exp = TRUE, min.score = 900) 
   result.list <- .prepareSigProteinJSON()
   protein.vec <- result.list$protein.vec # this actually is entrez IDs?
   seed.proteins <<- protein.vec
-  require(RJSONIO)
+  library(RJSONIO)
 
   # now do the database search
   if (db.type == "ppi") {
@@ -344,7 +344,7 @@ BuildSeedProteinNet <- function() {
 # create igraph from the edgelist saved from graph DB
 # and decompose into subnets
 CreateGraph <- function() {
-  require("igraph")
+  library("igraph")
   node.list <- ppi.net$node.data
   edge.list <- ppi.net$edge.data
 
@@ -458,7 +458,7 @@ GetNodeBetweenness <- function() {
 }
 
 GetPCSFNet <- function() {
-  require("PCSF")
+  library("PCSF")
   edg <- get.edgelist(overall.graph)
   edg <- as.data.frame(edg)
   edg$V3 <- rep(1, nrow(edg))
@@ -585,7 +585,7 @@ ExcludeNodes <- function(nodeids, filenm) {
     )
   }
   # now only save the node pos to json
-  require(RJSONIO)
+  library(RJSONIO)
   netData <- list(deletes = nds2rm, nodes = nodes)
   sink(filenm)
   cat(toJSON(netData))

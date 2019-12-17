@@ -8,7 +8,7 @@
 
 # table name is org code, id.type is column name
 QueryMirSQLite <- function(org, id.type, q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   mir.db <- dbConnect(SQLite(), paste(sqlite.path, "mir.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
   statement <- paste("SELECT * FROM ", org, " WHERE ", id.type, " IN (", query, ")", sep = "")
@@ -20,7 +20,7 @@ QueryMirSQLite <- function(org, id.type, q.vec) {
 
 # table name is org code, id.type is column name
 QueryDrugSQLite <- function(q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   drug.db <- dbConnect(SQLite(), paste(sqlite.path, "drug.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
   statement <- paste("SELECT * FROM human WHERE upid IN (", query, ")", sep = "")
@@ -31,7 +31,7 @@ QueryDrugSQLite <- function(q.vec) {
 }
 
 QueryDiseaseSQLite <- function(q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   drug.db <- dbConnect(SQLite(), paste(sqlite.path, "disease.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
   statement <- paste("SELECT * FROM human WHERE entrez IN (", query, ")", sep = "")
@@ -42,7 +42,7 @@ QueryDiseaseSQLite <- function(q.vec) {
 }
 
 QueryTfmirSQLite <- function(q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   drug.db <- dbConnect(SQLite(), paste(sqlite.path, "tfmir.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
   statement <- paste("SELECT * FROM ", data.org, " WHERE ((id1 IN (", query, ")) OR (id2 IN (", query, ")))", sep = "")
@@ -53,7 +53,7 @@ QueryTfmirSQLite <- function(q.vec) {
 }
 
 QueryDiffNetSQLite <- function(q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   drug.db <- dbConnect(SQLite(), paste(sqlite.path, "tissuePPI.sqlite", sep = ""))
   table.nm <- diffNetName
   query <- paste(shQuote(q.vec), collapse = ",")
@@ -71,7 +71,7 @@ QueryDiffNetSQLite <- function(q.vec) {
 }
 
 QueryCellCoexSQLite <- function(q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   drug.db <- dbConnect(SQLite(), paste(sqlite.path, data.org, "_immune.sqlite", sep = ""))
   tblNm <- paste0(data.org, "_", cellCoexNumber)
   query <- paste(shQuote(q.vec), collapse = ",")
@@ -83,7 +83,7 @@ QueryCellCoexSQLite <- function(q.vec) {
 }
 
 QueryTissueCoexSQLite <- function(q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   drug.db <- dbConnect(SQLite(), paste(sqlite.path, "tissueCoex.sqlite", sep = ""))
   tblNm <- paste0(data.org, "_", cellCoexNumber)
   query <- paste(shQuote(q.vec), collapse = ",")
@@ -95,7 +95,7 @@ QueryTissueCoexSQLite <- function(q.vec) {
 }
 
 QueryChemSQLite <- function(org, q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   chem.db <- dbConnect(SQLite(), paste(sqlite.path, "chem.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
   statement <- paste("SELECT * FROM ", org, " WHERE entrez IN (", query, ")", sep = "")
@@ -106,7 +106,7 @@ QueryChemSQLite <- function(org, q.vec) {
 }
 
 QueryTFSQLite <- function(table.nm, q.vec) {
-  require("RSQLite")
+  library("RSQLite")
   chem.db <- dbConnect(SQLite(), paste(sqlite.path, "tfac.sqlite", sep = ""))
   query <- paste(shQuote(q.vec), collapse = ",")
   statement <- paste("SELECT * FROM ", table.nm, " WHERE entrez IN (", query, ")", sep = "")

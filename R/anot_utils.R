@@ -435,7 +435,7 @@ PerformEnrichAnalysis <- function(file.nm, fun.type, ora.vec) {
   current.msg <<- "Functional enrichment analysis was completed"
 
   # write json
-  require(RJSONIO)
+  library(RJSONIO)
   fun.anot <- hits.query
   total <- resTable[, 2]
   if (length(total) == 1) {
