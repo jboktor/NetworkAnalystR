@@ -10,38 +10,38 @@ SetGroupContrast <- function(dataName, grps){
   if(dataSet$name != dataName){
     dataSet <- readRDS(dataName);
   }
-  if(length(levels(dataSet$cls))>2){ 
+  if(length(levels(dataSet$cls))>2){
     print("Updating group contrasts .....");
     grp.nms <- strsplit(grps, " vs. ")[[1]];
     sel.inx <- as.character(dataSet$cls) %in% grp.nms;
-    
+
     # regenerate factor to drop levels, force the levels order
-    group <- factor(dataSet$cls[sel.inx], levels=grp.nms);  
+    group <- factor(dataSet$cls[sel.inx], levels=grp.nms);
     data <- dataSet$data[, sel.inx];
     dataSet$cls <- group;
     dataSet$data <- data;
-    RegisterData(dataSet);  
+    RegisterData(dataSet);
   }
 }
 
 # determine if all annotated data are ready for meta-analysis
 CheckMetaDataIntegrity<-function(){
-  
+
   performedDE <<- FALSE;
-  
+
   if(length(mdata.all) == 0){
     current.msg <<-"Please upload your data or try our example datasets!";
     print(current.msg);
     return(0);
   }
-  
+
   include.inx <- mdata.all==1;
   if(sum(include.inx) == 0){
     current.msg <<-"No dataset is selected for analysis!";
     print(current.msg);
     return(0);
   }
-  
+
   sel.nms <- names(mdata.all)[include.inx];
   clss <- list();
   if(meta.upload){
@@ -55,7 +55,7 @@ CheckMetaDataIntegrity<-function(){
     common.matrix <- data;
     nms.vec <<- rownames(inmex.meta.orig$data);
     smps.vec <<- data.lbl
-  }else{   
+  }else{
     # first check that all class labels are consistent
     dataSet <- readRDS(sel.nms[1]);
     lvls <- levels(dataSet$cls);
@@ -68,13 +68,13 @@ CheckMetaDataIntegrity<-function(){
       clss[[i]] = dataSet$cls;
       # check if class label is consistent
       if(!all(levels(dataSet$cls) == lvls)){
-        current.msg <<- paste(sel.nms[i], "has different group labels", 
-                              paste(levels(dataSet$cls), collapse=":"), 
+        current.msg <<- paste(sel.nms[i], "has different group labels",
+                              paste(levels(dataSet$cls), collapse=":"),
                               "from", sel.nms[1], paste(lvls, collapse=":"));
         print(current.msg);
         return(0);
       }
-      
+
       # check and record if there is common genes            
       shared.nms <- intersect(shared.nms, rownames(dataSet$data));
       if(length(shared.nms) < 10){
@@ -82,7 +82,7 @@ CheckMetaDataIntegrity<-function(){
         print(current.msg);
         return(0);
       }
-      
+
       # check gene id type
       if(dataSet$id.type != id.type){
         current.msg <<- paste(sel.nms[i], "has different gene/probe ID from", sel.nms[1]);
@@ -90,11 +90,11 @@ CheckMetaDataIntegrity<-function(){
         return(0);
       }
     }
-    
-    nrepu<<-unlist(lapply(clss,FUN=function(x)length(x)));      
-    
+
+    nrepu<<-unlist(lapply(clss,FUN=function(x)length(x)));
+
     print("Passed exp condition check!");
-    
+
     # now construct a common matrix to faciliated plotting across all studies
     dataName <- sel.nms[1];
     dataSet <- readRDS(dataName);
@@ -103,21 +103,21 @@ CheckMetaDataIntegrity<-function(){
     smps.vec = colnames(dataSet$data);
     data.lbl <- rep(dataName, ncol(common.matrix));
     cls.lbl <- dataSet$cls;
-    
+
     for(i in 2:length(sel.nms)){
       dataName <- sel.nms[i];
       dataSet <- readRDS(dataName);
       ndat <- dataSet$data[shared.nms, ];
       nms.vec = c(nms.vec, rownames(dataSet$data));
       smps.vec = c(smps.vec, colnames(dataSet$data));
-      plot.ndat <- t(scale(t(ndat)));
+      t(scale(t(ndat))) ;
       common.matrix <- cbind(common.matrix, ndat);
       data.lbl <- c(data.lbl, rep(dataName, ncol(dataSet$data[,])));
       cls.lbl <- c(cls.lbl, dataSet$cls);
     }
     cls.lbl <- factor(cls.lbl);
     levels(cls.lbl) <- lvls;
-    
+
     smps.nms = colnames(common.matrix)
     if(length(unique(smps.nms)) != length(smps.nms)){
       data.nb = length(unique(data.lbl));
@@ -127,11 +127,11 @@ CheckMetaDataIntegrity<-function(){
       }
       levels(data.lbl) = data.vec;
       colnames(common.matrix) = make.unique(paste(data.vec, smps.nms, sep="_"));
-      
+
       dataSet <- readRDS(sel.nms[1]);
       colnames(dataSet$data) = paste("d1", colnames(dataSet$data), sep="_");
       RegisterData(dataSet);
-      
+
       for(i in 2:length(sel.nms)){
         dataSet <- readRDS(sel.nms[i]);
         colnames(dataSet$data) = paste0("d",i,"_",colnames(dataSet$data));
@@ -141,10 +141,10 @@ CheckMetaDataIntegrity<-function(){
       smps.vec <<- smps.nms;
       current.msg <<- paste("Duplicated sample names detected, samples have been renamed to make them unique.");
     }
-    
+
     # note: index by entrez, gene symbol DO have duplicates
     rownames(common.matrix) <- shared.nms;
-    
+
     # resort data, first on data.lbl, then on class lbl
     ord.inx <- order(data.lbl, cls.lbl);
     common.matrix <- data.matrix(common.matrix[,ord.inx]);
@@ -155,17 +155,17 @@ CheckMetaDataIntegrity<-function(){
     nms.vec <<- nms.vec
     smps.vec <<- smps.vec
   }
-  
+
   if(ncol(common.matrix) > 1000){  # max sample number allow 1000
     current.msg <<- paste("Total combined sample #:", ncol(common.matrix), "(exceed the limit: 1000!)");
     return(0);
   }
-  
+
   # save the meta-dataset
   res <- data.frame(colnames(common.matrix), cls.lbl, data.lbl, t(common.matrix));
   colnames(res) <- c('#NAME', '#CLASS.condition', paste('#CLASS.dataset',id.type, data.org, sep="."), rownames(common.matrix));
   write.table(t(res), sep="\t", file="NetworkAnalyst_merged_data.txt", col.names=F, quote=FALSE);
-  
+
   # need to set up the data for plotting (boxplot, heatmpa) so 
   # we need to scale row for each dataset in order to elimiate the maganitude difference 
   plot.matrix <- matrix(NA, nrow=nrow(common.matrix), ncol=ncol(common.matrix));
@@ -175,49 +175,48 @@ CheckMetaDataIntegrity<-function(){
     data.inx <- data.lbl == sel.nms[i];
     plot.matrix[,data.inx] <- t(scale(t(common.matrix[,data.inx])));
   }
-  
+
   # if entrez, get symbols for display
   shared.nms <- rownames(common.matrix);
-  if(id.type == "entrez"){ 
+  if(id.type == "entrez"){
     symbols <- doEntrez2SymbolMapping(shared.nms);
   }else{ # display itself
     symbols <- shared.nms;
   }
   names(symbols) <- shared.nms;
-  
+
   inmex.meta <- list(data=common.matrix,
                      plot.data=plot.matrix,
                      id.type = id.type,
                      gene.symbls = symbols,
                      cls.lbl=factor(cls.lbl),
                      data.lbl=data.lbl);
-  
+
   saveRDS(inmex.meta, "inmex_meta.rds");
   smps.vec <<- colnames(common.matrix);
-  
+
   # setup common stats gene number, smpl number, grp info
   current.msg <<- paste("Sample #:", ncol(inmex.meta$data),
-                        "Common ID #:", nrow(inmex.meta$data), 
+                        "Common ID #:", nrow(inmex.meta$data),
                         "Condition:", paste(levels(inmex.meta$cls.lbl), collapse=" vs. "));
   return(1);
 }
 
-PerformMetaDeAnal <- function(){ 
-  inmex.meta <- readRDS("inmex_meta.rds");   
+PerformMetaDeAnal <- function(){
+  inmex.meta <- readRDS("inmex_meta.rds");
   data.lbl = inmex.meta$data.lbl
   allmat = matrix("NA", nrow=length(nms.vec), ncol=length(data.lbl))
   rownames(allmat) = nms.vec
   colnames(allmat) = colnames(inmex.meta$data)
-  
+
   include.inx <- mdata.all==1;
   if(sum(include.inx) == 0){
     current.msg <<-"No dataset is selected for analysis!";
     print(current.msg);
-    return(0);
-  }
-  
+    return(0)  }
+
   if(meta.upload){
-    dat = inmex.meta$data 
+    inmex.meta$data
     datasets = levels(inmex.meta$data.lbl)
     for(i in 1:length(datasets)){
       dt = datasets[i];
@@ -244,7 +243,7 @@ PerformMetaDeAnal <- function(){
       allmat[rows, cols] <- norm.dat[rows, cols]
     }
   }
-  
+
   saveRDS(allmat, "allmat.rds");
   performedDE <<- TRUE;
   PerformEachDEAnal(meta.upload);
@@ -265,30 +264,30 @@ PerformEachDEAnal <- function(is.meta=F){
       sel.inx <- inmex.meta$data.lbl == dataName;
       group <- factor(inmex.meta$cls.lbl[sel.inx]); # note regenerate factor to drop levels 
       data <- inmex.meta$data[, sel.inx];
-      
+
       # update data set
       dataSet$type <- "array";
       dataSet$name <- dataName;
       group <- factor(inmex.meta$cls.lbl[sel.inx]); # note regenerate factor to drop levels 
       dataSet$cls <- group;
       res.limma <- PerformLimma(data, group);
-      
+
       # save the limma fit object for meta-analysis (such as "dataSet1.fit.obj")
       saveRDS(res.limma$fit.obj, file=paste(dataName, "fit.obj", sep="."));
-      
+
       res.all <- GetLimmaResTable(res.limma$fit.obj);
       saveRDS(res.all, "meta.resTable.rds");
       res.mat <- cbind(logFC=res.all$logFC, Pval = res.all$adj.P.Val);
-      
+
       rownames(res.mat) <- rownames(res.all);
       inmex.ind[[dataName]] <- res.mat;
-      
+
       #register sig one
       sig.inx <- res.mat[,2]<=GlobalCutOff$BHth;
       #sig.inx <- res.mat[,2]<=dataSet$pval;
       dataSet$sig.mat <- res.mat[sig.inx,];
       RegisterData(dataSet);
-      
+
       # clean up
       rm(dataSet, res.all);
       gc();
@@ -299,28 +298,28 @@ PerformEachDEAnal <- function(is.meta=F){
       sel.inx <- inmex.meta$data.lbl == dataName;
       group <- factor(inmex.meta$cls.lbl[sel.inx]); # note regenerate factor to drop levels 
       data <- inmex.meta$data[, sel.inx];
-      
+
       dataSet <- readRDS(dataName);
       grp.lvl <- levels(dataSet$cls);
-      
+
       # update data set
       dataSet$type <- "array";
       group <- factor(inmex.meta$cls.lbl[sel.inx], levels=grp.lvl, ordered=T); # note regenerate factor to drop levels 
       dataSet$cls <- group;
-      
+
       res.limma <- PerformLimma(data, group);
-      
+
       # save dataSet object for meta-analysis
       saveRDS(res.limma$fit.obj, file=paste(dataName, "fit.obj", sep="."));
-      
+
       res.all <- GetLimmaResTable(res.limma$fit.obj);
       saveRDS(res.all, "meta.resTable.rds");
-      
+
       res.mat <- cbind(logFC=res.all$logFC, Pval = res.all$adj.P.Val);
-      
+
       rownames(res.mat) <- rownames(res.all);
       inmex.ind[[dataName]] <- res.mat;
-      
+
       #sig.inx <- res.mat[,2]<=GlobalCutOff$BHth;
       sig.inx <- res.mat[,2]<=dataSet$pval;
       dataSet$sig.mat <- res.mat[sig.inx,];
@@ -341,62 +340,61 @@ PerformMetaEffectSize<- function(method="rem", BHth=0.05){
   inmex.meta <- readRDS("inmex_meta.rds");
   inmex.method <<- "effectsize";
   meta.mat <<- meta.stat <<- NULL;
-  
+
   sel.nms <- names(mdata.all)[mdata.all==1];
   nbstudies <- length(sel.nms);
   listgd<-vector("list", (nbstudies+3));
   ES<-array(dim=c(nrow(inmex.meta$data),4,nbstudies));
   cls.lvls <- levels(as.factor(inmex.meta$cls.lbl));
-  
+
   for (i in 1:nbstudies){
     data.nm <- sel.nms[i];
     dataSet <- readRDS(data.nm);
-    
+
     fit.obj.nm <- paste(data.nm, "fit.obj", sep=".");
     fit2i <- readRDS(fit.obj.nm);
-    
+
     pvals <- p.adjust(fit2i$p.value,method="BH");
     listgd[[i]]=which(pvals<=BHth);
-    
+
     n1i=length(which(dataSet$cls==cls.lvls[1]));
     n2i=length(which(dataSet$cls==cls.lvls[2]));
     ES[,,i]=effectsize(fit2i$t,((n1i*n2i)/(n1i+n2i)),(fit2i$df.prior+fit2i$df.residual));
   }
-  
+
   #only unbiased; for biased effect sizes, add ES[,1,],ES[,2,]
   listgd[[(nbstudies+1)]]=unique(unlist(listgd[1:nbstudies]))
   restempdirect=combineES(ES[,3,],ES[,4,],BHth, method);
-  
+
   pooled.ef <- restempdirect[[3]];
-  wt.mat<- restempdirect[[4]]; # one column for each study
-  
+  restempdirect[[4]]; # one column for each study
+
   listgd[[(nbstudies+2)]]=restempdirect$DEindices
   listgd[[(nbstudies+3)]]=restempdirect$TestStatistic
-  names(listgd)=c(paste("study",1:nbstudies,sep=""),"AllIndStudies","Meta","TestStatistic")  
-  
+  names(listgd)=c(paste("study",1:nbstudies,sep=""),"AllIndStudies","Meta","TestStatistic")
+
   es.mat <- matrix(0, nrow=nrow(inmex.meta$data), ncol=2);
   es.mat[,1] <- pooled.ef;
   es.mat[,2] <- p.adjust(2*(1-pnorm(abs(listgd[[(nbstudies+3)]]))), method="BH");
-  
+
   colnames(es.mat) <- c("CombinedES","Pval");
   rownames(es.mat) <- rownames(inmex.meta$data);
   #allMeta.mat <<- es.mat;
   saveRDS(es.mat, "allMeta.mat.rds");
-  
+
   # now keep only genes with at least on sig (in one study or meta analysis)
   inx <- union(listgd[[(nbstudies+1)]], listgd[[(nbstudies+2)]]);
   es.mat <- es.mat[inx,];
-  
+
   #sort
   ord.inx <- order(abs(es.mat[, "Pval"]), decreasing = F);
   es.mat<-signif(es.mat[ord.inx,],5);
-  
+
   sig.inx <- which(es.mat[,"Pval"]<=BHth);
   meta.mat <<- es.mat[sig.inx, ];
   meta.mat.all <<- es.mat;
   SetupMetaStats(BHth);
-  return(length(sig.inx));
-}
+  return(length(sig.inx))}
 
 # combining p values based on Fisher's or Stouffer
 PerformPvalCombination <- function(method="stouffer", BHth=0.05){
@@ -407,58 +405,57 @@ PerformPvalCombination <- function(method="stouffer", BHth=0.05){
   inmex.method <<- "metap";
   meta.mat <<- meta.stat <<- NULL;
   sel.nms <- names(mdata.all)[mdata.all==1];
-  
+
   classes <- list();
   nbstudies <- length(sel.nms);
   listgd=vector("list", (nbstudies+3));
-  
+
   for (i in 1:nbstudies){
     data.nm <- sel.nms[i];
     dataSet <- readRDS(data.nm);
-    classes[[i]] <- dataSet$cls; 
-    
+    classes[[i]] <- dataSet$cls;
+
     fit.obj.nm <- paste(data.nm, "fit.obj", sep=".");
     fit2i <- readRDS(fit.obj.nm);
-    
+
     pvals <- p.adjust(fit2i$p.value,method="BH");
     listgd[[i]]=which(pvals<=BHth);
-    
+
     #recalculate moderated one sided p
     p1sidedLimma=pt(fit2i$t,df=(fit2i$df.prior+fit2i$df.residual))
     assign(paste("p1sidedLimma",i,sep=""), p1sidedLimma)
   }
-  
+
   names(classes) <- sel.nms;
   tempvec=paste("p1sidedLimma",1:nbstudies,sep="");
-  
+
   lsinglep=lapply(tempvec,FUN=function(x) get(x,inherits=TRUE));
   nrep=unlist(lapply(classes,FUN=function(x)length(x)));
   listgd[[(nbstudies+1)]]=unique(unlist(listgd[1:nbstudies]));
-  
+
   restempdirect=combinePvals(lsinglep,nrep,BHth,method);
-  
+
   listgd[[(nbstudies+2)]]=restempdirect$DEindices
   listgd[[(nbstudies+3)]]=restempdirect$CombinedP
-  names(listgd)=c(paste("study",1:nbstudies,sep=""),"AllIndStudies","Meta","CombinedP");  
-  
+  names(listgd)=c(paste("study",1:nbstudies,sep=""),"AllIndStudies","Meta","CombinedP");
+
   pc.mat <- cbind(CombinedTstat=restempdirect$CombinedStat, CombinedPval=restempdirect$CombinedP);
   rownames(pc.mat) <- rownames(inmex.meta$data);
   saveRDS(pc.mat, "allMeta.mat.rds");
-  
+
   # now keep only genes with at least on sig (in one study or meta analysis)
   inx <- union(listgd[[(nbstudies+1)]], listgd[[(nbstudies+2)]]);
   pc.mat <- pc.mat[inx,];
-  
+
   #sort
   ord.inx <- order(pc.mat[, "CombinedPval"], decreasing = F);
   pc.mat<-signif(pc.mat[ord.inx,],5);
-  
+
   sig.inx <- which(pc.mat[, "CombinedPval"]<=BHth);
   meta.mat <<- pc.mat[sig.inx, ];
   meta.mat.all <<- pc.mat;
   SetupMetaStats(BHth);
-  return(length(sig.inx));
-}
+  return(length(sig.inx))}
 
 # diff used for direction, not selection
 PerformVoteCounting <- function(BHth = 0.05, minVote){
@@ -477,42 +474,41 @@ PerformVoteCounting <- function(BHth = 0.05, minVote){
   for(i in 1:length(inmex.ind)){
     res.mat <- inmex.ind[[i]];
     res.mat <- res.mat[shared.ids, ];
-    
+
     #note in meta-analysis should consider directions
     # use logFC for this purpose 
     # consider upregulated
     hit.up.inx <- res.mat[,1]> 0 & res.mat[,2] <= BHth;
     up.vote <- as.numeric(hit.up.inx);
-    
+
     # consider downregulated
     hit.dn.inx <- res.mat[,1] < 0 & res.mat[,2] <= BHth;
     dn.vote <- -as.numeric(hit.dn.inx);
-    
+
     vc.mat[,i] <- up.vote + dn.vote;
   }
-  
+
   # total score (votes for each direction)
   vc.mat[,length(sel.nms)+1] <- apply(vc.mat, 1, sum);
   colnames(vc.mat) <- c(paste("Vote", substring(sel.nms,0, nchar(sel.nms)-4)), "VoteCounts");
   rownames(vc.mat) <- rownames(inmex.meta$data);
-  
+
   # compute at least one vote (no direction)
   vote.any <- apply(abs(vc.mat), 1, sum)
   vote.any.inx <- vote.any > 0;
-  
+
   # return results with at least one vote
   vc.mat <- vc.mat[vote.any.inx, ];
-  
+
   #sort
   ord.inx <- order(abs(vc.mat[, "VoteCounts"]), decreasing = T);
   vc.mat <- vc.mat[ord.inx, "VoteCounts", drop=F];
-  
+
   sig.inx <- abs(vc.mat[,"VoteCounts"]) >= minVote;
   meta.mat <<- vc.mat;
   meta.mat.all <<- vc.mat;
   SetupMetaStats(BHth);
-  return(length(sig.inx));
-}
+  return(length(sig.inx))}
 
 
 # This approach directly merge all data sets
@@ -523,34 +519,31 @@ PerformMetaMerge<-function(BHth=0.05){
   inmex.meta <- readRDS("inmex_meta.rds");
   # prepare for meta-stats
   # calculate sig genes for individual analysis
-  shared.names <- rownames(inmex.meta$data);
-  
+  rownames(inmex.meta$data) ;
+
   res.limma <- PerformLimma(inmex.meta$data, as.factor(inmex.meta$cls.lbl));
   res.all <- GetLimmaResTable(res.limma$fit.obj);
-  
+
   ord.inx <- order(res.all$adj.P.Val, decreasing=F);
   dm.mat <- as.matrix(res.all[ord.inx,c("logFC", "adj.P.Val")]);
   colnames(dm.mat) <- c("CombinedLogFC", "Pval");
-  
+
   sig.inx <- which(dm.mat[,"Pval"] <= BHth);
   meta.mat <<- dm.mat[sig.inx,];
   meta.mat.all <<- dm.mat
   SetupMetaStats(BHth);
-  return(length(sig.inx));
-}
+  return(length(sig.inx))}
 
 GetMetaGeneIDType<-function(){
   inmex.meta <- readRDS("inmex_meta.rds");
-  return(inmex.meta$id.type);
-}
+  return(inmex.meta$id.type)}
 
 GetMetaResultGeneIDs<-function(){
   rnms <- rownames(as.matrix(meta.mat));# already sorted based on meta-p values
   if(length(rnms) > 500){
     rnms <- rnms[1:500];
   }
-  return(rnms);
-}
+  return(rnms)}
 
 # note, due to limitation of get/post
 # maximum gene symb for list is top 500
@@ -563,12 +556,10 @@ GetMetaResultGeneSymbols<-function(){
   if(inmex.meta$id.type == "entrez"){ # row name gene symbols
     ids <- inmex.meta$gene.symbls[ids];
   }
-  return(ids);
-}
+  return(ids)}
 
 GetMetaResultPathSymbols<-function(){
-  return(rownames(meta.mat.all));
-}
+  return(rownames(meta.mat.all))}
 
 GetMetaResultPathLinks <- function(){
   symbs <- rownames(meta.mat);
@@ -576,8 +567,7 @@ GetMetaResultPathLinks <- function(){
   # set up links to genbank
   annots <- paste("<a href='http://pantherdb.org/panther/category.do?categoryAcc=", ids,
                   "' target='_blank'>", symbs, "</a>", sep="");
-  return(annots);
-}
+  return(annots)}
 
 
 GetMetaResultGeneIDLinks <- function(){
@@ -590,8 +580,7 @@ GetMetaResultGeneIDLinks <- function(){
   # set up links to genbank
   annots <- paste("<a href='http://www.ncbi.nlm.nih.gov/gene?term=", ids,
                   "' target='_blank'>", symbs, "</a>", sep="");
-  return(annots);
-}
+  return(annots)}
 
 GetMetaResultColNames<-function(){
   sel.nms <- names(mdata.all)[mdata.all==1];
@@ -614,21 +603,19 @@ GetMetaResultMatrix<-function(single.type="fc"){
 }
 
 GetMetaStat<-function(){
-  return (meta.stat$stat);
-}
+  return (meta.stat$stat)}
 
 GetMetaStatNames<-function(){
-  return (names(meta.stat$stat));
-}
+  return (names(meta.stat$stat))}
 
 combinePvals <- function(pvalonesided,nrep,BHth=0.05, method) {
   listres=vector("list",3);
-  nbstudies=length(pvalonesided);
+  length(pvalonesided) ;
   nbreptot=sum(nrep);
   if (nbreptot <2) {
     stop("Error: the argument \"nrep\" must be a vector with at least two values higher than 1")
-  } 
-  
+  }
+
   weight=sqrt(nrep/nbreptot);
   fstatmeta=function(g){
     vecptime=unlist(lapply(pvalonesided, FUN = function(x) x[g]));
@@ -636,38 +623,38 @@ combinePvals <- function(pvalonesided,nrep,BHth=0.05, method) {
     stattestg = sum(weight[1:length(pvalonesided)] * vec[1:length(pvalonesided)], na.rm = TRUE);
     stattestg;
   }
-  
+
   fishersum <- function(pvec){
     return(sum(-2*log(pvec)))
   }
-  
+
   if(method=="stouffer"){
     statpvalc=-unlist(lapply(rep(1:length(as.vector(pvalonesided[[1]])), 1), function(x) fstatmeta(x)));
     rpvalpvalc=2*(1-pnorm(abs(statpvalc)));
   }else{ # fisher
     data <- data.frame(pvalonesided);
     #data[data == 0] <- 1*10^-10;
-    
+
     #note, p value are calculated for one side
     # pt (lower.tail=T by default) which tests if group A < group B
     # for one side
     fsum1 <- apply(data, 1, fishersum);
     rpvalpvalc1 = 1-pchisq(fsum1, df=(ncol(data)*2));
-    
+
     # for the other side
     data <- 1-data;
     fsum2 <- apply(data, 1, fishersum);
     rpvalpvalc2 = 1-pchisq(fsum2, df=(ncol(data)*2));
-    
+
     # report the min of two direction calculation
     rpvalpvalc <- pmin(rpvalpvalc1, rpvalpvalc2);
-    
+
     # adding direction information
     statpvalc <- pmax(fsum1, fsum2);
     # if A<B sig, then it should be negative 
     statpvalc[statpvalc == fsum1]<- -statpvalc[statpvalc == fsum1];
   }
-  
+
   rpvalpvalc <- p.adjust(rpvalpvalc,method="BH");
   res=which(rpvalpvalc<=BHth);
   listres[[1]]=res
@@ -684,9 +671,9 @@ combineES <- function (ES, varES, BHth = 0.05, method){
   }else{
     useREM = FALSE;
   }
-  
+
   num.studies <- dim(ES)[2];
-  
+
   Qvals <- f.Q.NA(ES, varES)
   if (useREM) {
     varES <- varES + tau2.NA(Qvals, num.studies, my.weights = 1/varES)
@@ -712,7 +699,7 @@ f.Q.NA = function(dadj, varadj) {
   w <- 1/varadj
   tmp1 <- w * dadj
   mu <- rowSums(tmp1, na.rm = TRUE)/rowSums(w, na.rm = TRUE)
-  Q <- rowSums(w * (dadj - mu)^2, na.rm = TRUE)
+  rowSums(w * (dadj - mu)^2, na.rm = TRUE)
 }
 
 tau2.NA <- function(Q, num.studies, my.weights) {
@@ -732,36 +719,36 @@ tau2.NA <- function(Q, num.studies, my.weights) {
 PrepareMetaHeatmapJSON <- function(){
   gene.vec <- rownames(meta.mat);
   datanm.vec <- names(mdata.all)[mdata.all==1];
-  
+
   inmex.meta <- readRDS("inmex_meta.rds");
   dat.inx <- inmex.meta$data.lbl %in% datanm.vec;
-  dat <- inmex.meta$plot.data[gene.vec, dat.inx, drop=F]; 
-  
+  dat <- inmex.meta$plot.data[gene.vec, dat.inx, drop=F];
+
   # scale each gene for each dataset
   dat <- t(scale(t(dat)));
-  
+
   # now need to remove na or constant rows
   dat <- na.omit(dat);
   # check for columns with all constant (var =0)
   varCol <- apply(dat, 1, var, na.rm=T);
   constCol <- (varCol == 0 | is.na(varCol));
   dat <- dat[!constCol, ];
-  
+
   anot.res <- list();
   ids <- rownames(dat);
-  if(inmex.meta$id.type == "entrez"){   
+  if(inmex.meta$id.type == "entrez"){
     anot.res <- doEntrezIDAnot(ids);
   }else{ # no annotation, then use the default feature ID
-    anot.res$gene_id <- anot.res$symbol <- anot.res$name <- ids; 
+    anot.res$gene_id <- anot.res$symbol <- anot.res$name <- ids;
   }
-  
+
   data.nms <- as.factor(inmex.meta$data.lbl[dat.inx]);
   cls.lbls <- as.factor(inmex.meta$cls.lbl[dat.inx]);
-  
+
   # setup annotation info
   data.nms <- as.character(data.nms);
   datasets <- substr(as.character(data.nms), 0, nchar(data.nms)-4);
-  
+
   sel.nms <- names(mdata.all)[mdata.all==1];
   if(length(sel.nms) > 1){
     annotation <- data.frame(class= cls.lbls, dataset = as.factor(datasets));
@@ -769,18 +756,18 @@ PrepareMetaHeatmapJSON <- function(){
     annotation <- data.frame(class= cls.lbls);
   }
   rownames(annotation) <- colnames(dat);
-  
+
   ####
-  sig.ids <- rownames(dat);
+  rownames(dat) ;
   if(inmex.method != "votecount"){
     stat.pvals <- as.numeric(meta.mat[,2]);
   }else{
     stat.pvals <- as.numeric(meta.mat[,1]);
   }
-  
+
   orig.smpl.nms <- colnames(dat);
   orig.gene.nms <- rownames(dat);
-  
+
   # do clustering and save cluster info
   if(nrow(dat)> 1){
     dat.dist <- dist(dat);
@@ -792,7 +779,7 @@ PrepareMetaHeatmapJSON <- function(){
     gene.single.rk <- match(orig.gene.nms, orig.gene.nms[gene.single.ord]);
     gene.complete.ord <- hclust(dat.dist, "complete")$order;
     gene.complete.rk <- match(orig.gene.nms, orig.gene.nms[gene.complete.ord]);
-    
+
     dat.dist <- dist(t(dat));
     smpl.ward.ord <- hclust(dat.dist, "ward.D")$order;
     smpl.ward.rk <- match(orig.smpl.nms, orig.smpl.nms[smpl.ward.ord])
@@ -808,29 +795,29 @@ PrepareMetaHeatmapJSON <- function(){
     gene.ward.rk <- gene.ave.rk <- gene.single.rk <- gene.complete.rk <- matrix(1);
     smpl.ward.rk <- smpl.ave.rk <- smpl.single.rk <- smpl.complete.rk <- 1:ncol(dat);
   }
-  
+
   gene.cluster <- list(
-    pval = stat.pvals, 
+    pval = stat.pvals,
     ward = gene.ward.rk,
     average = gene.ave.rk,
     single = gene.single.rk,
     complete = gene.complete.rk
   );
-  
+
   sample.cluster <- list(
     ward = smpl.ward.rk,
     average = smpl.ave.rk,
     single = smpl.single.rk,
     complete = smpl.complete.rk
   );
-  
+
   # prepare meta info    
   # 1) convert meta.data info numbers
   # 2) match number to string (factor level)
   meta <- annotation;
   grps <- colnames(meta);
   nmeta <- meta.vec <- NULL;
-  uniq.num <- 0;
+  0;
   for (i in 1:ncol(meta)){
     cls <- meta[,i];
     grp.nm <- grps[i];
@@ -839,27 +826,27 @@ PrepareMetaHeatmapJSON <- function(){
     ncls <- paste(grp.nm, as.numeric(cls)); # note, here to retain ordered factor
     nmeta <- c(nmeta, ncls);
   }
-  
+
   # convert back to numeric 
   nmeta <- as.numeric(as.factor(nmeta))+99;
-  unik.inx <- !duplicated(nmeta)   
-  
+  unik.inx <- !duplicated(nmeta)
+
   # get corresponding names
-  meta_anot <- meta.vec[unik.inx]; 
+  meta_anot <- meta.vec[unik.inx];
   names(meta_anot) <- nmeta[unik.inx]; # name annotatation by their numbers
-  
+
   nmeta <- matrix(nmeta, ncol=ncol(meta), byrow=F);
   colnames(nmeta) <- grps;
-  
+
   # for each gene/row, first normalize and then tranform real values to 30 breaks 
   res <- t(apply(dat, 1, function(x){as.numeric(cut(x, breaks=30))}));
-  
+
   # note, use {} will lose order; use [[],[]] to retain the order
   # single element vector will be converted to scalar, not array, need to prevent that
   gene.id = anot.res$symbol; if(length(gene.id) ==1) { gene.id <- matrix(gene.id) };
-  gene.entrez = anot.res$gene_id; if(length(gene.entrez) ==1) { gene.entrez <- matrix(gene.entrez) };        
+  gene.entrez = anot.res$gene_id; if(length(gene.entrez) ==1) { gene.entrez <- matrix(gene.entrez) };
   gene.name = anot.res$name; if(length(gene.name) ==1) { gene.name <- matrix(gene.name) };
-  
+
   json.res <- list(
     data.type = "array",
     gene.id = as.character(anot.res$symbol),
@@ -873,9 +860,8 @@ PrepareMetaHeatmapJSON <- function(){
     data.lbl = inmex.meta$data.lbl,
     data = res
   );
-  
-  return(json.res);
-}
+
+  return(json.res)}
 
 
 ##################################
@@ -890,16 +876,16 @@ f.Q <- function(dadj, varadj){
   w<-1/varadj
   tmp1<-w*dadj
   mu<-rowSums(tmp1)/rowSums(w)
-  Q<-rowSums(w*(dadj - mu)^2)
+  rowSums(w*(dadj - mu)^2)
 }
 
 qc.metaDensity<- function(imgNm, dpi=72, format, factor){
   library("ggplot2")
   inmex.meta <- readRDS("inmex_meta.rds");
-  dat = inmex.meta$data
+  inmex.meta$data
   imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
   dpi = as.numeric(dpi)
-  
+
   df = data.frame(inmex.meta$data, stringsAsFactors = FALSE)
   df = stack(df)
   if(factor != "NA"){
@@ -908,7 +894,7 @@ qc.metaDensity<- function(imgNm, dpi=72, format, factor){
     #Factor = dataSet$meta.info[,1];
   }
   Factor=inmex.meta$data.lbl
-  
+
   conv = data.frame(ind=colnames(inmex.meta$data), class=Factor)
   conv$ind=gsub("-", ".", conv$ind)
   df1 = merge(df, conv, by="ind")
@@ -923,8 +909,10 @@ effectsize <- function(tstat,ntilde,m){
   d=tstat/sqrt(ntilde)
   dprime=cm*d
   terme1=m/((m-2)*ntilde)
-  vard=terme1+d^2*(terme1*ntilde-1/cm^2)
-  vardprime=cm^2*(terme1+dprime^2*(terme1*ntilde-1/cm^2))
+  cs_1 <- cm^2
+  cs_2 <- (terme1*ntilde-1/cs_1)
+  vard=terme1+d^2* cs_2
+  vardprime=cs_1*(terme1+dprime^2* cs_2 )
   result=cbind(d,vard,dprime,vardprime)
   colnames(result)=c("d","vard","dprime","vardprime")
   result
@@ -939,16 +927,16 @@ PerformMetaPathCombine <- function(name, netNm, method, lib, mType, BHth=0.05){
   library(fgsea)
   curr.geneset <- LoadEnrLib(lib);
   inmex.method <<- "effectsize";
-  meta.stat = "null";
-  
+  "null";
+
   allMeta.mat <- readRDS("allMeta.mat.rds");
   #allMeta.mat[allMeta.mat[,2]==0] <- 1e-20
   rankedVec = as.vector(allMeta.mat[,1])*sign(allMeta.mat[,1]);
-  
+
   names(rankedVec) = rownames(allMeta.mat);
   rankedVec = sort(rankedVec)
   rankedVec = rankedVec[unique(names(rankedVec))]
-  fgseaRes <- fgsea(pathways = curr.geneset, 
+  fgseaRes <- fgsea(pathways = curr.geneset,
                     stats = rankedVec,
                     minSize=1,
                     maxSize=1000,
@@ -956,9 +944,9 @@ PerformMetaPathCombine <- function(name, netNm, method, lib, mType, BHth=0.05){
   fgseaRes = fgseaRes[!duplicated(fgseaRes$pathway),]
   fgseaRes = fgseaRes[,c("size","ES", "NES","padj", "pathway", "pval")]
   fgseaRes=fgseaRes[order(-abs(fgseaRes$ES)),]
-  fgseaRes=fgseaRes[order(fgseaRes$pval),] 
-  
-  fgseaRe = data.frame(fgseaRes)
+  fgseaRes=fgseaRes[order(fgseaRes$pval),]
+
+  data.frame(fgseaRes)
   rownames(fgseaRes) = fgseaRes$pathway
   es.mat = as.matrix(fgseaRes[,c("ES","padj")]);
   colnames(es.mat) = c("EnrichmentScore","Pvalue")
@@ -995,16 +983,16 @@ PlotGShmMeta <-function(cmpdNm, IDs){
   library(RJSONIO);
   json.mat <- RJSONIO::toJSON(json.res, .na='null', pretty=TRUE);
   json.nm <- paste(cmpdNm,"_hm", ".json", sep="");
-  
+
   sink(json.nm);
   cat(json.mat);
   sink();
-  
+
   return(json.nm)
 }
 
 PlotMetaHm <-function(cmpdNm){
-  
+
   allmat = readRDS("allmat.rds")
   current.geneset <- readRDS("current_geneset.rds")
   ids <- current.geneset[[cmpdNm]];
@@ -1012,18 +1000,18 @@ PlotMetaHm <-function(cmpdNm){
   if(length(subset)<1){
     subset = allmat[which(rownames(allmat) %in% ids),]
   }
-  
+
   if(inmex.method %in% c("effectsize", "merge")){
     dims = dim(subset)
     rnms = rownames(subset)
-    cnms = colnames(subset) 
+    cnms = colnames(subset)
     m <- mapply(subset, FUN=as.numeric)
     subset <- matrix(data=m, ncol=dims[2], nrow=dims[1])
     rownames(subset) = rnms
     colnames(subset) = cnms
     subset = subset[complete.cases(subset), ];
   }
-  
+
   json.res <- list(
     data=subset,
     ids=doEntrez2SymbolMapping(rownames(subset)),
@@ -1032,17 +1020,17 @@ PlotMetaHm <-function(cmpdNm){
   library(RJSONIO);
   json.mat <- RJSONIO::toJSON(json.res, .na='null', pretty=TRUE);
   json.nm <- paste(cmpdNm,"_hm", ".json", sep="");
-  
+
   sink(json.nm);
   cat(json.mat);
   sink();
-  
+
   return(json.nm)
 }
 
 PlotMetaPhm <-function(cmpdNm, dpi=72){
   allmat = readRDS("allmat.rds");
-  
+
   fileNm = paste("Path_", cmpdNm, ".png", sep="");
   current.geneset <- readRDS("current_geneset.rds")
   ids=current.geneset[[cmpdNm]];
@@ -1054,7 +1042,7 @@ PlotMetaPhm <-function(cmpdNm, dpi=72){
   library(pheatmap)
   dims = dim(subset)
   rnms = rownames(subset)
-  cnms = colnames(subset) 
+  cnms = colnames(subset)
   m <- mapply(subset, FUN=as.numeric)
   subset <- matrix(data=m, ncol=dims[2], nrow=dims[1])
   rownames(subset) = rnms
@@ -1062,7 +1050,7 @@ PlotMetaPhm <-function(cmpdNm, dpi=72){
   if(inmex.method %in% c("effectsize", "merge")){
     subset = subset[complete.cases(subset), ];
   }
-  
+
   subset[is.na(subset)] <- 0
   my_palette <- colorRampPalette(c("green", "black", "red"))(n = 30)
   my_palette = c("#d3d3d3", my_palette)
@@ -1079,41 +1067,41 @@ PlotMetaPhm <-function(cmpdNm, dpi=72){
 # for gene set-level meta-analysis
 
 SetupMetaGSEAStats <- function(name, netNm, BHth, mType, curr.geneset, lib){
-  
-  inmex.de <- list();
+
+  list() ;
   allmat <- readRDS("allMeta.mat.rds");
   allmat.vec <- rownames(allmat);
   meta.mat = metaset.mat
-  metade.genes <- rownames(meta.mat);
-  pval.mat <- fc.mat <- matrix(nrow=nrow(meta.mat), ncol=sum(mdata.all==1));
-  fc.list <- split(rep(" ", length(allmat.vec)), allmat.vec);
-  
-  
+  rownames(meta.mat) ;
+  matrix(nrow=nrow(meta.mat), ncol=sum(mdata.all==1)) ;
+  split(rep(" ", length(allmat.vec)), allmat.vec) ;
+
+
   current.geneset = curr.geneset[!duplicated(names(curr.geneset))]
   inx =names(current.geneset) %in% rownames(meta.mat)  ;
-  
-  resTable = meta.mat
+
+  meta.mat
   current.mset = current.geneset[inx];
-  
+
   inmex.meta <- readRDS("inmex_meta.rds");
-  
+
   ora.vec <- rownames(inmex.meta$data)
   ora.nms <- doEntrez2SymbolMapping(rownames(inmex.meta$data))
-  
-  hits.query <- lapply(current.mset, 
+
+  hits.query <- lapply(current.mset,
                        function(x) {
                          unique(ora.nms[ora.vec%in%unlist(x)]);
-                       });  
+                       });
   saveRDS(hits.query, "hits_query.rds");
-  
+
   set.num = unlist(lapply(current.mset, function(x){length(unique(x))}), use.names=TRUE);
   names(hits.query) <- names(current.mset);
   hit.num<-unlist(lapply(hits.query, function(x){length(x)}), use.names=TRUE);
-  
+
   vote.bool = "false"
   meta.matcolinx = 2;
-  enr.score = "NA"   
-  
+  "NA"
+
   padj <- p.adjust(as.vector(meta.mat[,meta.matcolinx]),method="BH");
   if(mType == "network"){
     json.res <- list(
@@ -1139,12 +1127,12 @@ SetupMetaGSEAStats <- function(name, netNm, BHth, mType, curr.geneset, lib){
       isVote = vote.bool
     );
   }
-  
-  
+
+
   library(RJSONIO);
   json.mat <- RJSONIO::toJSON(json.res, .na='null', pretty=TRUE);
   json.nm <- paste0(name, ".json");
-  
+
   sink(json.nm);
   cat(json.mat);
   sink();
@@ -1157,10 +1145,10 @@ SetupMetaGSEAStats <- function(name, netNm, BHth, mType, curr.geneset, lib){
     res.mat[,"P.Value"] = meta.mat[,meta.matcolinx];
     res.mat[,"FDR"] = padj;
     enr.mat <<- res.mat
-    res <- data.frame(Name=as.vector(rownames(meta.mat)), Total=set.num, Hits= hit.num, EnrichmentScore=as.vector(meta.mat[,1]), Pval=as.vector(meta.mat[,meta.matcolinx]), Padj = padj);
+    data.frame(Name=as.vector(rownames(meta.mat)), Total=set.num, Hits= hit.num, EnrichmentScore=as.vector(meta.mat[,1]), Pval=as.vector(meta.mat[,meta.matcolinx]), Padj = padj) ;
     list.genes <<- allmat.vec
     SetListNms();
-    netnm <- paste0(netNm, ".json");
+    paste0(netNm, ".json") ;
     PrepareEnrichNet(netNm, "meta", "mixed");
   }else{
     res.mat<-matrix(0, nrow=length(names(current.mset)), ncol=5);
@@ -1176,6 +1164,6 @@ SetupMetaGSEAStats <- function(name, netNm, BHth, mType, curr.geneset, lib){
 }
 
 CalculateGsNet <- function(name, netNm, type, mType, db){
-  res = PerformMetaPathCombine(name, netNm, "pval", db, mType,0.05)
+  PerformMetaPathCombine(name, netNm, "pval", db, mType,0.05)
   return(1)
 }

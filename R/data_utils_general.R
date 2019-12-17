@@ -15,7 +15,7 @@ Init.Data<-function(path="../../"){
   data.org <<- "hsa";
   keggpw.count <<- 0;
   pvalu <<- 0.05;
-  dataSet <<- list(annotated=FALSE); 
+  dataSet <<- list(annotated=FALSE);
   if(file.exists("/home/glassfish/sqlite/networkanalyst/")){
     sqlite.path <<- "/home/glassfish/sqlite/networkanalyst/";  #public server
     # disable parallel prcessing for DESeq2/edgeR
@@ -29,11 +29,11 @@ Init.Data<-function(path="../../"){
     sqlite.path <<- "/home/soufanom/Documents/Projects/sqlite/networkanalyst/"; #soufanom local
   }
   lib.path <<- paste0(path, "data/");
-  data.org <<- NULL; 
-  module.count <<- 0; 
+  data.org <<- NULL;
+  module.count <<- 0;
   msg.vec <<- vector(mode="character");
   current.msg <<- "";
-  
+
   # preload some general package
   require('Cairo');
   CairoFonts("Arial:style=Regular","Arial:style=Bold","Arial:style=Italic","Helvetica","Symbol")
@@ -45,7 +45,7 @@ Init.Data<-function(path="../../"){
 # also set up or clear the other global objects
 SetAnalType <- function(analType){
   anal.type <<- analType;
-  mdata.all <<- list(); 
+  mdata.all <<- list();
   meta.selected <<- TRUE;
   meta.upload <<- FALSE; # when upload merged data from meta-analysis b4
 }
@@ -73,19 +73,17 @@ RegisterData <- function(dataSet){
   if(anal.type == "metadata"){
     mdata.all[[dataName]] <<- 1;
   }else{
-    mdata.all <<- lapply(mdata.all, function(x){ x <- 0;});
+    mdata.all <<- lapply(mdata.all, function(x){ 0;});
     mdata.all[[dataName]] <<- 1;
   }
-  return(1);
-}
+  return(1)}
 
 # only for switching single expression data results
 SetCurrentData <- function(nm){
   if(dataSet$name != nm){
     dataSet <<- readRDS(nm);
   }
-  return(1);
-}
+  return(1)}
 
 # remove data object, the current dataSet will be the last one by default 
 RemoveData <- function(dataName){
@@ -103,7 +101,7 @@ SelectData <- function(){
     print(current.msg);
     return(0);
   }
-  
+
   all.nms <- names(mdata.all);
   for(nm in all.nms){
     if(nm %in% nm.vec){
@@ -146,10 +144,10 @@ SetRankingMetric <- function(opt){
 
 
 SetListNms <- function(){
-  newDat <- list();
-  tot.count <- 0;
+  list() ;
+  0;
   listSizes <- list();
-  
+
   # convert to entrez
   if(anal.type == "metadata"){
     inmex.meta <- readRDS("inmex_meta.rds");
@@ -160,13 +158,13 @@ SetListNms <- function(){
     nm = "dataSet"
   }
   names(en.ids) <- doEntrez2SymbolMapping(en.ids)
-  
+
   listSizes[[1]] <- list(
     name = nm,
     label = nm,
     size = length(en.ids)
   );
-  
+
   list.genes <<- en.ids;
   listSizes <<- listSizes;
 }

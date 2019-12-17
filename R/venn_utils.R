@@ -10,7 +10,7 @@
 # a: a unique (no b, no c)
 # ab: a and b, no c
 PrepareVennData<-function(){
-  newDat <- list();
+  list() ;
   if(anal.type == "metadata"){
     sel.inx <- mdata.all==1;
     sel.nms <- names(mdata.all)[sel.inx];
@@ -46,11 +46,10 @@ PrepareVennData<-function(){
   venn.genenb <<- venn.genenb
   venn.list.up <<- sel.dats;
   venn.genenb.up <<- venn.genenb
-  return(1);
-}
+  return(1)}
 
 PrepareSelVennData<-function(selectedNms){
-  newDat <- list();
+  list() ;
   sel.nms <- unlist(strsplit(selectedNms, ";"));
   venn.genenb <- vector()
   sel.dats <- list();
@@ -70,38 +69,37 @@ PrepareSelVennData<-function(selectedNms){
     }
   }
   if(length(sel.dats) == 2){
-    venn.list <- Prepare2Venn(sel.dats);
+    Prepare2Venn(sel.dats) ;
   }else if(length(sel.dats) == 3){
-    venn.list <- Prepare3Venn(sel.dats);
+    Prepare3Venn(sel.dats) ;
   }else if(length(sel.dats) == 4){
-    venn.list <- Prepare4Venn(sel.dats);
+    Prepare4Venn(sel.dats) ;
   }
   venn.list.up <<- sel.dats;
   venn.genenb.up <<- venn.genenb
-  return(1);
-}
+  return(1)}
 
 
 #3
 Prepare2Venn <- function(dat){
-  nms <- names(dat);  
+  nms <- names(dat);
   a <- nms[1];
   b <- nms[2];
   ab <- paste(a, b, sep="");
-  
+
   a.l <- dat[[a]];
   b.l <- dat[[b]];
-  
+
   vennData <- list();
   vennData[[a]] <- setdiff(a.l, b.l);
-  vennData[[b]] <- setdiff(b.l, a.l);    
+  vennData[[b]] <- setdiff(b.l, a.l);
   vennData[[ab]] <- intersect(b.l, a.l);
   vennData <<- vennData;
 }
 
 #7
 Prepare3Venn <- function(dat){
-  nms <- names(dat);  
+  nms <- names(dat);
   a <- nms[1];
   b <- nms[2];
   c <- nms[3];
@@ -109,15 +107,15 @@ Prepare3Venn <- function(dat){
   ac <- paste(a, c, sep="");
   bc <- paste(b, c, sep="");
   abc <- paste(a, b, c, sep="");
-  
+
   a.l <- dat[[a]];
   b.l <- dat[[b]];
   c.l <- dat[[c]];
-  
+
   vennData <- list();
   vennData[[a]] <- setdiff(a.l, union(b.l, c.l));
-  vennData[[b]] <- setdiff(b.l, union(a.l, c.l));    
-  vennData[[c]] <- setdiff(c.l, union(a.l, b.l));    
+  vennData[[b]] <- setdiff(b.l, union(a.l, c.l));
+  vennData[[c]] <- setdiff(c.l, union(a.l, b.l));
   vennData[[ab]] <- setdiff(intersect(a.l, b.l), c.l);
   vennData[[ac]] <- setdiff(intersect(a.l, c.l), b.l);
   vennData[[bc]] <- setdiff(intersect(b.l, c.l), a.l);
@@ -127,7 +125,7 @@ Prepare3Venn <- function(dat){
 
 # 15
 Prepare4Venn <- function(dat){
-  nms <- names(dat);  
+  nms <- names(dat);
   a <- nms[1];
   b <- nms[2];
   c <- nms[3];
@@ -143,17 +141,17 @@ Prepare4Venn <- function(dat){
   acd <- paste(a, c, d, sep="");
   bcd <- paste(b, c, d, sep="");
   abcd <- paste(a, b, c, d, sep="");
-  
+
   a.l <- dat[[a]];
   b.l <- dat[[b]];
   c.l <- dat[[c]];
   d.l <- dat[[d]];
-  
+
   vennData <- list();
   vennData[[a]] <- setdiff(a.l, unique(c(b.l, c.l, d.l)));
-  vennData[[b]] <- setdiff(b.l, unique(c(a.l, c.l, d.l)));    
-  vennData[[c]] <- setdiff(c.l, unique(c(a.l, b.l, d.l)));    
-  vennData[[d]] <- setdiff(d.l, unique(c(a.l, b.l, c.l))); 
+  vennData[[b]] <- setdiff(b.l, unique(c(a.l, c.l, d.l)));
+  vennData[[c]] <- setdiff(c.l, unique(c(a.l, b.l, d.l)));
+  vennData[[d]] <- setdiff(d.l, unique(c(a.l, b.l, c.l)));
   vennData[[ab]] <- setdiff(intersect(a.l, b.l), union(c.l, d.l));
   vennData[[ac]] <- setdiff(intersect(a.l, c.l), union(b.l, d.l));
   vennData[[ad]] <- setdiff(intersect(a.l, d.l), union(b.l, c.l));
@@ -169,28 +167,22 @@ Prepare4Venn <- function(dat){
 }
 
 GetSelectedDataNumber <- function(){
-  return(length(venn.list));
-}
+  return(length(venn.list))}
 
 GetSelectedDataNames <- function(){
-  return(paste(names(venn.list), collapse=";"));
-}
+  return(paste(names(venn.list), collapse=";"))}
 
 GetSelectedDataGeneNumber<- function(){
-  return(paste(venn.genenb, collapse=";"));
-}
+  return(paste(venn.genenb, collapse=";"))}
 
 GetSelectedDataNumberUpdated <- function(){
-  return(length(venn.list.up));
-}
+  return(length(venn.list.up))}
 
 GetSelectedDataNamesUpdated <- function(){
-  return(paste(names(venn.list.up), collapse=";"));
-}
+  return(paste(names(venn.list.up), collapse=";"))}
 
 GetSelectedDataGeneNumberUpdated<- function(){
-  return(paste(venn.genenb.up, collapse=";"));
-}
+  return(paste(venn.genenb.up, collapse=";"))}
 
 
 #areas is allname concated
@@ -205,10 +197,8 @@ GetVennGeneNames <- function(areas){
   sym.vec <- doEntrez2SymbolMapping(gene.vec);
   names(gene.vec) <- sym.vec;
   venn.genes <<- gene.vec;
-  return(paste(unique(sym.vec), collapse="||"));
-}
+  return(paste(unique(sym.vec), collapse="||"))}
 
 PerformVennEnrichment <- function(file.nm, fun.type){
   res <- PerformEnrichAnalysis(file.nm, fun.type, venn.genes);
-  return(res);
-}
+  return(res)}
