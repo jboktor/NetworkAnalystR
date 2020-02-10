@@ -25,7 +25,6 @@ vignettes/*.pdf
 
 # Data
 data/test/
-data/sqlite/
 
 # Work In Progress
 rmd/code-optimization.Rmd
