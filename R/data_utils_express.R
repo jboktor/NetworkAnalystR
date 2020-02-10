@@ -9,7 +9,7 @@
 # stored in dataSet list object
 # can have many classes, stored in meta.info  
 ReadTabExpressData <- function(fileName) {
-  
+
   dataSet <- .readTabData(fileName);
   
   # rename data to data.orig
@@ -51,11 +51,11 @@ ReadTabExpressData <- function(fileName) {
   }
   current.msg <<- paste(msg, collapse="; ");
   data.proc <- RemoveDuplicates(int.mat, "mean", quiet=T);
-  
+
   # save processed data for download user option
   write.csv(data.proc, file="data_processed.csv");
   saveRDS(data.proc, "data.proc.rds");
-  
+
   dataSet <<- dataSet;
   return (1);
 }
@@ -82,7 +82,7 @@ GetMetaInfo <- function(){
 PerformDataAnnot <- function(org, dataType, idType, lvlOpt){
   data.org <<- org;
   SetInitLib(org)
-  
+
   dataSet$type <- dataType;
   dataSet$id.orig <- dataSet$id.current <- idType;
   dataSet$annotated <- F;
@@ -93,10 +93,10 @@ PerformDataAnnot <- function(org, dataType, idType, lvlOpt){
   if (org != 'NA' & idType != 'NA'){
     feature.vec <- rownames(data.proc);
     anot.id <- doAnnotation(feature.vec, idType);
-    
+
     #dataSet$annotation <- anot.id; 
     saveRDS(anot.id, "annotation.rds");
-    
+
     hit.inx <- !is.na(anot.id);
     matched.len <- sum(hit.inx);
     perct <- round(matched.len/length(feature.vec),3)*100;
@@ -137,9 +137,9 @@ PerformDataAnnot <- function(org, dataType, idType, lvlOpt){
   # this need to be updated to gether with data from now on
   dataSet$data.norm <- dataSet$data.anot;
   dataSet <<- dataSet;
-  
+
   saveRDS(dataSet$data.anot, file="orig.data.anot"); # keep original copy, not in mem
-  
+
   totalCount =  sum(colSums(dataSet$data.anot));
   avgCount = sum(colSums(dataSet$data.anot))/ ncol(dataSet$data.anot);
   minCount = min(colSums(dataSet$data.anot))
@@ -158,10 +158,10 @@ PerformDataAnnot <- function(org, dataType, idType, lvlOpt){
 
 
 PerformExpressNormalization <- function(norm.opt, var.thresh, count.thresh, abundance, filterUnmapped){
-  
-  print("normalizing ....");
-  msg <- "Only features with annotations are kept for further analysis.";
-  
+
+    print("normalizing ....");
+    msg <- "Only features with annotations are kept for further analysis.";
+
   if(filterUnmapped == "false"){
     # need to update those with annotations
     data1 <- readRDS("data.proc.rds");
@@ -173,7 +173,7 @@ PerformExpressNormalization <- function(norm.opt, var.thresh, count.thresh, abun
   }else{
     raw.data.anot <- data <- readRDS("orig.data.anot");
   }
-  
+
   if (dataSet$type == "count"){
     sum.counts <- apply(data, 1, sum, na.rm=TRUE);
     rm.inx <- sum.counts < count.thresh;
@@ -186,7 +186,7 @@ PerformExpressNormalization <- function(norm.opt, var.thresh, count.thresh, abun
     rm.inx = avg.signal < p05
     data <- data[!rm.inx,]
     msg <- paste(msg, "Filtered ", sum(rm.inx), " genes with low relative abundance (average expression signal).", collapse=" ");
-  }
+    }
   
   data <- PerformDataNormalization(data, norm.opt);
   if(length(data)==1 && data == 0){
@@ -205,13 +205,13 @@ PerformExpressNormalization <- function(norm.opt, var.thresh, count.thresh, abun
   
   dataSet$data.anot <- raw.data.anot[remain,]
   dataSet$data.norm <- data;
-  
+
   # save normalized data for download user option
   write.csv(dataSet$data.norm, file="data_normalized.csv");
-  
+
   current.msg <<- msg;
   dataSet <<- dataSet;
-  
+
   return(1);
 }
 
@@ -227,10 +227,10 @@ PerformDataNormalization <- function(data, norm.opt){
     numberOfNeg = sum(data<=0, na.rm = TRUE) + 1; 
     totalNumber = length(data)
     if((numberOfNeg/totalNumber)>0.2){
-      msg <- paste(msg, "Can't perform log2 normalization, over 20% of data are negative. Try a different method or maybe the data already normalized?", collapse=" ");
-      print(msg);
-      norm.msg <<- current.msg <<- msg;
-      return(0);
+        msg <- paste(msg, "Can't perform log2 normalization, over 20% of data are negative. Try a different method or maybe the data already normalized?", collapse=" ");
+        print(msg);
+        norm.msg <<- current.msg <<- msg;
+        return(0);
     }
     data[data<=0] <- min.val;
     data <- log2(data);
@@ -314,7 +314,7 @@ SetupDesignMatrix<-function(deMethod){
   dataSet$design <- design;
   dataSet$de.method <- deMethod;
   dataSet <<- dataSet;
-  
+
   return(1);
 }
 
@@ -407,12 +407,12 @@ PerformDEAnal<-function (anal.type = "default", par1 = NULL, par2 = NULL, nested
   } else if (dataSet$de.method == "deseq2"){
     # only for small data set (< 60)
     if(length(cls) > 60){
-      current.msg <<- "For large sample size (>60), use limma or edgeR."; 
-      return(0);
+        current.msg <<- "For large sample size (>60), use limma or edgeR."; 
+        return(0);
     }else{ # use microservice
-      deseq.in <- list(dataSet=dataSet, contrast.matrix = contrast.matrix);
-      saveRDS(deseq.in, "deseq_in.rds");
-      return(1);
+        deseq.in <- list(dataSet=dataSet, contrast.matrix = contrast.matrix);
+        saveRDS(deseq.in, "deseq_in.rds");
+        return(1);
     }
   } else {
     library(edgeR)
@@ -725,60 +725,60 @@ qc.boxplot <- function(dat, imgNm, dpi=72, format="png"){
 }
 
 qc.pcaplot <- function(x, imgNm, dpi=72, format="png", factor){
-  dpi = as.numeric(dpi);
-  imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
-  require('lattice');
-  require('ggplot2');
-  require('reshape');
-  pca <- prcomp(t(na.omit(x)));
-  imp.pca<-summary(pca)$importance;
-  xlabel = paste0("PC1"," (", 100*round(imp.pca[2,][1], 3), "%)")
-  ylabel = paste0("PC2"," (", 100*round(imp.pca[2,][2], 3), "%)")
-  names <- colnames(x);
-  pca.res <- as.data.frame(pca$x);
-  pca.res <- pca.res[,c(1,2)]
-  # increase xlim ylim for text label
-  xlim <- GetExtendRange(pca.res$PC1);
-  ylim <- GetExtendRange(pca.res$PC2);
-  if(length(dataSet$meta.info) == 2){
-    Factor1 = as.vector(dataSet$meta.info[,1])
-    factorNm1 = colnames(dataSet$meta.info)[1]
-    pca.res[,factorNm1] = Factor1
-    Factor2 = as.vector(dataSet$meta.info[,2])
-    factorNm2 = colnames(dataSet$meta.info)[2]
-    pca.res[,factorNm2] = Factor2
-    pca.rest <- melt(pca.res, measure.vars=c(factorNm1,factorNm2))
-    colnames(pca.rest)[4] = "Conditions"
-    pca.rest$names = c(rownames(pca.res), rownames(pca.res))
-    if(length(pca.rest$names)>20){
-      pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions, label=pca.rest$names)) +
-        geom_point(size=3, alpha=0.5) + xlim(xlim)+ ylim(ylim) + xlab(xlabel) + ylab(ylabel) + facet_grid(. ~ variable)
+    dpi = as.numeric(dpi);
+    imgNm = paste(imgNm, "dpi", dpi, ".", format, sep="");
+    require('lattice');
+    require('ggplot2');
+    require('reshape');
+    pca <- prcomp(t(na.omit(x)));
+    imp.pca<-summary(pca)$importance;
+    xlabel = paste0("PC1"," (", 100*round(imp.pca[2,][1], 3), "%)")
+    ylabel = paste0("PC2"," (", 100*round(imp.pca[2,][2], 3), "%)")
+    names <- colnames(x);
+    pca.res <- as.data.frame(pca$x);
+    pca.res <- pca.res[,c(1,2)]
+    # increase xlim ylim for text label
+    xlim <- GetExtendRange(pca.res$PC1);
+    ylim <- GetExtendRange(pca.res$PC2);
+    if(length(dataSet$meta.info) == 2){
+        Factor1 = as.vector(dataSet$meta.info[,1])
+        factorNm1 = colnames(dataSet$meta.info)[1]
+        pca.res[,factorNm1] = Factor1
+        Factor2 = as.vector(dataSet$meta.info[,2])
+        factorNm2 = colnames(dataSet$meta.info)[2]
+        pca.res[,factorNm2] = Factor2
+        pca.rest <- melt(pca.res, measure.vars=c(factorNm1,factorNm2))
+        colnames(pca.rest)[4] = "Conditions"
+        pca.rest$names = c(rownames(pca.res), rownames(pca.res))
+        if(length(pca.rest$names)>20){
+            pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions, label=pca.rest$names)) +
+            geom_point(size=3, alpha=0.5) + xlim(xlim)+ ylim(ylim) + xlab(xlabel) + ylab(ylabel) + facet_grid(. ~ variable)
+        }else{
+            require('ggrepel');
+            pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions, label=pca.rest$names)) +
+                geom_point(size=4) + xlim(xlim)+ ylim(ylim) + xlab(xlabel) + ylab(ylabel) + geom_text_repel(force=1.5) + facet_grid(. ~ variable)
+        }
+        width = 12
+        height = 6
     }else{
-      require('ggrepel');
-      pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions, label=pca.rest$names)) +
-        geom_point(size=4) + xlim(xlim)+ ylim(ylim) + xlab(xlabel) + ylab(ylabel) + geom_text_repel(force=1.5) + facet_grid(. ~ variable)
+        Factor = dataSet$meta.info[,1];
+        pca.rest = pca.res
+        pca.rest$Conditions = Factor
+        pca.rest$names = rownames(pca.res)
+        if(length(rownames(pca.res))>20){
+            pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions)) +
+            geom_point(size=3, alpha=0.5) + xlim(xlim)+ ylim(ylim)+ xlab(xlabel) + ylab(ylabel) 
+        }else{
+            require('ggrepel');
+            pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions, label=rownames(pca.res))) +
+                geom_point(size=4) + xlim(xlim)+ ylim(ylim)+ xlab(xlabel) + ylab(ylabel) +geom_text_repel(force=1.5)+scale_color_manual(breaks=unique(pca.rest$Conditions), values=c("#00BFC4" ,"#F8766D"))
+        }
+        width = 8
+        height = 6
     }
-    width = 12
-    height = 6
-  }else{
-    Factor = dataSet$meta.info[,1];
-    pca.rest = pca.res
-    pca.rest$Conditions = Factor
-    pca.rest$names = rownames(pca.res)
-    if(length(rownames(pca.res))>20){
-      pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions)) +
-        geom_point(size=3, alpha=0.5) + xlim(xlim)+ ylim(ylim)+ xlab(xlabel) + ylab(ylabel) 
-    }else{
-      require('ggrepel');
-      pcafig = ggplot(pca.rest, aes(x=PC1, y=PC2,  color=Conditions, label=rownames(pca.res))) +
-        geom_point(size=4) + xlim(xlim)+ ylim(ylim)+ xlab(xlabel) + ylab(ylabel) +geom_text_repel(force=1.5)+scale_color_manual(breaks=unique(pca.rest$Conditions), values=c("#00BFC4" ,"#F8766D"))
-    }
-    width = 8
-    height = 6
-  }
-  Cairo(file=imgNm, width=width, height=height, type=format, bg="white", unit="in", dpi=dpi);
-  print(pcafig);
-  dev.off();
+    Cairo(file=imgNm, width=width, height=height, type=format, bg="white", unit="in", dpi=dpi);
+    print(pcafig);
+    dev.off();
 }
 
 
@@ -810,29 +810,29 @@ PlotLibSizeView<-function(imgNm,dpi=72, format="png",factor){
     df2 <- melt(df1, measure.vars=c(factor1Nm,factor2Nm))
     colnames(df2)[4] = "Conditions"
     if(length(df2$ind)>20){
-      g = ggplot(df2, aes(x = Conditions, y = count, fill=Conditions))+
-        geom_dotplot(binaxis = 'y', stackdir = 'center',
-                     position = position_dodge(), dotsize=0.7) + ylab("Sum") + facet_grid(. ~ variable);
-    }else{
-      g = ggplot(df2, aes(x = Conditions, y = count, fill=Conditions, label=ind))+
-        geom_dotplot(binaxis = 'y', stackdir = 'center',
-                     position = position_dodge(), dotsize=0.7) + geom_text_repel(force=5) + ylab("Sum") + facet_grid(. ~ variable);
-    }
+    g = ggplot(df2, aes(x = Conditions, y = count, fill=Conditions))+
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), dotsize=0.7) + ylab("Sum") + facet_grid(. ~ variable);
+}else{
+        g = ggplot(df2, aes(x = Conditions, y = count, fill=Conditions, label=ind))+
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), dotsize=0.7) + geom_text_repel(force=5) + ylab("Sum") + facet_grid(. ~ variable);
+}
     width = 12
     height = 6
   }else{
     Conditions= as.character(dataSet$meta.info[,1]);
     conv = data.frame(ind=sampleNms, Conditions=Conditions)
     df1 = merge(df, conv, by="ind")
-    if(length(df1$ind)>20){
-      g = ggplot(df1, aes(x = Conditions, y = count, fill=Conditions))+
-        geom_dotplot(binaxis = 'y', stackdir = 'center',
-                     position = position_dodge(), dotsize=0.7) + xlab("Sum");
-    }else{
-      g = ggplot(df1, aes(x = Conditions, y = count, label=ind, fill=Conditions))+
-        geom_dotplot(binaxis = 'y', stackdir = 'center',
-                     position = position_dodge(), dotsize=0.7) + geom_text_repel(force=5) + xlab("Sum");
-    }
+ if(length(df1$ind)>20){
+    g = ggplot(df1, aes(x = Conditions, y = count, fill=Conditions))+
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), dotsize=0.7) + xlab("Sum");
+}else{
+    g = ggplot(df1, aes(x = Conditions, y = count, label=ind, fill=Conditions))+
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), dotsize=0.7) + geom_text_repel(force=5) + xlab("Sum");
+}
     width = 8
     height = 6
   }
@@ -1040,9 +1040,9 @@ Volcano.Anal <- function(paired=FALSE, fcthresh, threshp, analType, inx){
   ## for Volcano data
   ##########################
   
-  if(init.lib != "NA"){
-    PerformVolcanoEnrichment("abc", init.lib, "null", "all", inx)
-  }
+if(init.lib != "NA"){
+  PerformVolcanoEnrichment("abc", init.lib, "null", "all", inx)
+}
   
   fileName <- "volcano.csv";
   jsonNm <- "volcano.json";
@@ -1162,7 +1162,7 @@ GetLimmaResTable<-function(fit.obj){
 
 # given a gene id, plot its expression profile as box plot
 PlotSelectedGene<-function(gene.id, type){
-  
+
   imgName <- paste("Gene_", gene.id, ".png", sep="");
   require(lattice);
   if(anal.type == "onedata"){
@@ -1170,7 +1170,7 @@ PlotSelectedGene<-function(gene.id, type){
     inx <- which(ids == gene.id);
     symb <- dataSet$sig.genes.symbols[inx]; 
     if(type== "volcano"){
-      symb = "";
+        symb = "";
     }    
     if(dataSet$comp.type == "custom"){
       Cairo(file = imgName, width=280, height=320, type="png", bg="white");
@@ -1196,10 +1196,10 @@ PlotSelectedGene<-function(gene.id, type){
       
       myplot <- bwplot(dataSet$data.norm[gene.id,] ~ as.character(dataSet$cls), fill="#0000ff22", scales=list(x=list(rot=30)),
                        xlab="Class", ylab="Expression Pattern", main=symb);
-    }
+        }
     
   }else{ # metadata
-    
+
     inmex.meta <- readRDS("inmex_meta.rds");
     if(inmex.meta$id.type == "entrez"){
       symb <- inmex.meta$gene.symbls[gene.id];
@@ -1245,7 +1245,7 @@ PlotSelectedGene<-function(gene.id, type){
                        xlab="Datasets", ylab="Expression Pattern", main=symb, scales=list(x=list(rot=30)),
                        fill="#0000ff22", layout=layout);
     }
-  }
+    }
   print(myplot); 
   dev.off();
 }
@@ -1259,7 +1259,7 @@ PlotSelectedGeneLoading<-function(gene.id){
 }
 
 PlotSelectedGeneMeta<-function(gene.id){
-  
+
   # first get gene symbol
   inmex.meta <- readRDS("inmex_meta.rds");
   if(inmex.meta$id.type == "entrez"){
@@ -1334,7 +1334,7 @@ SaveHeatmapJSON <- function(fileName){
   if(anal.type == "metadata"){
     json.res <- PrepareMetaHeatmapJSON();
   }else{
-    json.res <- PrepareExpressHeatmapJSON();
+      json.res <- PrepareExpressHeatmapJSON();
   }
   
   require(RJSONIO);
@@ -1448,8 +1448,8 @@ PrepareExpressHeatmapJSON <- function(){
   res <- t(apply(dat, 1, function(x){as.numeric(cut(x, breaks=30))}));
   
   # note, use {} will lose order; use [[],[]] to retain the order
-  
-  
+
+
   if(dataSet$annotated){
     anot.id <- rownames(res);
     anot.res <- doEntrezIDAnot(anot.id);
@@ -1457,7 +1457,7 @@ PrepareExpressHeatmapJSON <- function(){
     gene.id = anot.res$symbol; if(length(gene.id) ==1) { gene.id <- matrix(gene.id) };
     gene.entrez = anot.res$gene_id; if(length(gene.entrez) ==1) { gene.entrez <- matrix(gene.entrez) };        
     gene.name = anot.res$name; if(length(gene.name) ==1) { gene.name <- matrix(gene.name) };
-    
+
     json.res <- list(
       data.type = dataSet$type, 
       gene.id = anot.res$symbol,
@@ -1477,7 +1477,7 @@ PrepareExpressHeatmapJSON <- function(){
     gene.id = rownames(anot.res); if(length(gene.id) ==1) { gene.id <- matrix(gene.id) };
     gene.entrez = anot.res$gene_id; if(length(gene.entrez) ==1) { gene.entrez <- matrix(gene.entrez) };  
     gene.name = paste(anot.res$symbol, anot.res$name, sep=" | "); if(length(gene.name) ==1) { gene.name <- matrix(gene.name) };
-    
+
     json.res <- list(
       data.type = dataSet$type, 
       gene.id = gene.id,
@@ -1559,7 +1559,7 @@ SaveExpressClusterLoadingJSON <- function(fileName, clustOpt, nb){
   # see if there is secondary
   loadEntrez <<- pca3d$score$entrez
   rownames(mypos) = pca3d$score$name;
-  
+
   write.csv(mypos, file="networkanalyst_3d_load_pos.csv");
   require(RJSONIO);
   json.mat <- toJSON(pca3d, .na='null');
@@ -1638,7 +1638,7 @@ SaveExpressClusterJSON <- function(fileName, clustOpt, opt){
   }
   pca3d$cls = dataSet$meta.info;
   rownames(mypos) = colnames(dataSet$data.norm);
-  
+
   write.csv(mypos, file="networkanalyst_3d_pos.csv");
   require(RJSONIO);
   json.mat <- toJSON(pca3d, .na='null');
@@ -1668,9 +1668,9 @@ SetVolcanoHigh<- function(ids){
     if(selectedNetDataset == "meta_dat"){
       gene.mat <- meta.mat;
       if(inmex.method != "votecount"){
-        gene.list$metadata <- list(gene=rownames(gene.mat),logFC=unname(gene.mat[,1]), adjP = unname(gene.mat[,2]));   
+      gene.list$metadata <- list(gene=rownames(gene.mat),logFC=unname(gene.mat[,1]), adjP = unname(gene.mat[,2]));   
       }else{
-        gene.list$metadata <- list(gene=rownames(gene.mat),logFC=unname(gene.mat[,1]), adjP = unname(gene.mat[,1]));   
+      gene.list$metadata <- list(gene=rownames(gene.mat),logFC=unname(gene.mat[,1]), adjP = unname(gene.mat[,1]));   
       }
     }else{
       #dataSet <- readRDS(selectedNetDataset);
@@ -1827,48 +1827,48 @@ SetVolcanoHigh<- function(ids){
 }
 
 meanSdPlot <- function(x, ranks = TRUE, xlab = ifelse(ranks, "rank(mean)", "mean"),
-                       ylab = "sd", pch, plot = TRUE, bins = 50, ...) {
-  
-  stopifnot(is.logical(ranks), length(ranks) == 1, !is.na(ranks))
-  
-  n = nrow(x)
-  if (n == 0L) {
-    warning("In 'meanSdPlot': input matrix 'x' has 0 rows. There is nothing to be done.")
-    return()
-  }
-  if (!missing(pch)) {
-    warning("In 'meanSdPlot': 'pch' is ignored.")
-  }
-  
-  px   = rowMeans(x, na.rm = TRUE)
-  py   = sqrt(rowV(x, mean = px, na.rm = TRUE))
-  rpx  = rank(px, na.last = FALSE, ties.method = "random")
-  
-  ## run median with centers at dm, 2*dm, 3*dm,... and width 2*dm
-  dm        = 0.025
-  midpoints = seq(dm, 1-dm, by = dm)
-  within    = function(x, x1, x2) { (x >= x1) & (x <= x2) }
-  mediwind  = function(mp) median(py[within(rpx/n, mp - 2*dm, mp + 2*dm)], na.rm = TRUE)
-  rq.sds    = sapply(midpoints, mediwind)
-  
-  res = if(ranks) {
-    list(rank = midpoints*n, sd = rq.sds, px = rpx, py = py)
-  } else {
-    list(quantile = quantile(px, probs = midpoints, na.rm = TRUE), sd = rq.sds, px = px, py = py)
-  }
-  
-  fmt = function() function(x) format(round(x, 0), nsmall = 0L, scientific = FALSE)
-  
-  res$gg = ggplot(data.frame(px = res$px, py = res$py),
-                  aes_string(x = "px", y = "py")) + xlab(xlab) + ylab(ylab) +
-    geom_hex(bins = bins, ...) +
-    scale_fill_gradient(name = "count", trans = "log", labels = fmt()) + 
-    geom_line(aes_string(x = "x", y = "y"),
-              data = data.frame(x = res[[1]], y = res$sd), color = "red")
-  
-  if (plot) print(res$gg)
-  
-  return(invisible(res))
+             ylab = "sd", pch, plot = TRUE, bins = 50, ...) {
+      
+      stopifnot(is.logical(ranks), length(ranks) == 1, !is.na(ranks))
+
+      n = nrow(x)
+      if (n == 0L) {
+        warning("In 'meanSdPlot': input matrix 'x' has 0 rows. There is nothing to be done.")
+        return()
+      }
+      if (!missing(pch)) {
+        warning("In 'meanSdPlot': 'pch' is ignored.")
+      }
+      
+      px   = rowMeans(x, na.rm = TRUE)
+      py   = sqrt(rowV(x, mean = px, na.rm = TRUE))
+      rpx  = rank(px, na.last = FALSE, ties.method = "random")
+                
+      ## run median with centers at dm, 2*dm, 3*dm,... and width 2*dm
+      dm        = 0.025
+      midpoints = seq(dm, 1-dm, by = dm)
+      within    = function(x, x1, x2) { (x >= x1) & (x <= x2) }
+      mediwind  = function(mp) median(py[within(rpx/n, mp - 2*dm, mp + 2*dm)], na.rm = TRUE)
+      rq.sds    = sapply(midpoints, mediwind)
+                
+      res = if(ranks) {
+        list(rank = midpoints*n, sd = rq.sds, px = rpx, py = py)
+      } else {
+        list(quantile = quantile(px, probs = midpoints, na.rm = TRUE), sd = rq.sds, px = px, py = py)
+      }
+      
+      fmt = function() function(x) format(round(x, 0), nsmall = 0L, scientific = FALSE)
+
+      res$gg = ggplot(data.frame(px = res$px, py = res$py),
+            aes_string(x = "px", y = "py")) + xlab(xlab) + ylab(ylab) +
+            geom_hex(bins = bins, ...) +
+            scale_fill_gradient(name = "count", trans = "log", labels = fmt()) + 
+          geom_line(aes_string(x = "x", y = "y"),
+                    data = data.frame(x = res[[1]], y = res$sd), color = "red")
+              
+      if (plot) print(res$gg)
+      
+      return(invisible(res))
 }
 
 rowV = function(x, mean, ...) {

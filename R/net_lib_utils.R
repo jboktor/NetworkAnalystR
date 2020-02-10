@@ -117,86 +117,86 @@ QueryTFSQLite<- function(table.nm, q.vec){
 }
 
 doPpiIDMapping <- function(q.vec){
-  if(data.org == "ath"){
-    db.map <-  queryGeneDB("tair", data.org);
-  }else if(data.org == "sce"){
-    if(net.type == "string"){ # only for yeast
-      db.map <-  queryGeneDB("entrez_embl_gene", data.org);
+    if(data.org == "ath"){
+        db.map <-  queryGeneDB("tair", data.org);
+    }else if(data.org == "sce"){
+        if(net.type == "string"){ # only for yeast
+            db.map <-  queryGeneDB("entrez_embl_gene", data.org);
+        }else{
+            db.map <-  queryGeneDB("entrez_uniprot", data.org);
+        }
+    }else if(net.type %in% c("innate", "irefinx", "rolland")){
+        db.map <-  queryGeneDB("entrez_uniprot", data.org);
     }else{
-      db.map <-  queryGeneDB("entrez_uniprot", data.org);
+        if(data.org %in% c("bsu", "tbr", "cel", "dme", "eco", "pfa","pae")){
+            db.map <-  queryGeneDB("entrez_string", data.org);
+        }else if (data.org %in% c("mmu","hsa") && net.type == "string"){
+            db.map <-  queryGeneDB("entrez_string", data.org);
+        }else if(data.org == "mtb"){
+            db.map <-  queryGeneDB("entrez", data.org);
+        }else{
+            db.map <-  queryGeneDB("entrez_embl_protein", data.org);
+        }
     }
-  }else if(net.type %in% c("innate", "irefinx", "rolland")){
-    db.map <-  queryGeneDB("entrez_uniprot", data.org);
-  }else{
-    if(data.org %in% c("bsu", "tbr", "cel", "dme", "eco", "pfa","pae")){
-      db.map <-  queryGeneDB("entrez_string", data.org);
-    }else if (data.org %in% c("mmu","hsa") && net.type == "string"){
-      db.map <-  queryGeneDB("entrez_string", data.org);
-    }else if(data.org == "mtb"){
-      db.map <-  queryGeneDB("entrez", data.org);
-    }else{
-      db.map <-  queryGeneDB("entrez_embl_protein", data.org);
+    hit.inx <- match(q.vec, db.map[, "gene_id"]);
+    ppi.mat <- db.map[hit.inx, ]; 
+
+    # fix the factor col related to library issue
+    i <- sapply(ppi.mat, is.factor)
+    ppi.mat[i] <- lapply(ppi.mat[i], as.character)
+    if(data.org %in% c("pae", "mtb")){
+        ppi.mat = ppi.mat[,c(2,1)];
+        colnames(ppi.mat) = c("gene_id", "accession");
     }
-  }
-  hit.inx <- match(q.vec, db.map[, "gene_id"]);
-  ppi.mat <- db.map[hit.inx, ]; 
-  
-  # fix the factor col related to library issue
-  i <- sapply(ppi.mat, is.factor)
-  ppi.mat[i] <- lapply(ppi.mat[i], as.character)
-  if(data.org %in% c("pae", "mtb")){
-    ppi.mat = ppi.mat[,c(2,1)];
-    colnames(ppi.mat) = c("gene_id", "accession");
-  }
-  return(ppi.mat);
+    return(ppi.mat);
 }
 
 doUniprot2EntrezMapping <- function(uniprot.vec){
-  # db.path <- paste(lib.path, data.org, "/entrez_uniprot.rds", sep="");
-  # db.map <-  readRDS(db.path);
-  db.map <-  queryGeneDB("entrez_uniprot", data.org);
-  hit.inx <- match(uniprot.vec, db.map[, "accession"]);
-  entrezs <- db.map[hit.inx, "gene_id"];    
-  mode(entrezs) <- "character";
-  return(entrezs);
+   # db.path <- paste(lib.path, data.org, "/entrez_uniprot.rds", sep="");
+   # db.map <-  readRDS(db.path);
+    db.map <-  queryGeneDB("entrez_uniprot", data.org);
+    hit.inx <- match(uniprot.vec, db.map[, "accession"]);
+    entrezs <- db.map[hit.inx, "gene_id"];    
+    mode(entrezs) <- "character";
+    return(entrezs);
 }
 
 doEntrez2UniprotMapping <- function(entrez.vec){
-  # db.path <- paste(lib.path, data.org, "/entrez_uniprot.rds", sep="");
-  # db.map <-  readRDS(db.path);
-  db.map <-  queryGeneDB("entrez_uniprot", data.org);
-  hit.inx <- match(entrez.vec, db.map[, "gene_id"]);
-  unips <- db.map[hit.inx, "accession"];    
-  mode(unips) <- "character";
-  return(unips);
+    # db.path <- paste(lib.path, data.org, "/entrez_uniprot.rds", sep="");
+    # db.map <-  readRDS(db.path);
+    db.map <-  queryGeneDB("entrez_uniprot", data.org);
+    hit.inx <- match(entrez.vec, db.map[, "gene_id"]);
+    unips <- db.map[hit.inx, "accession"];    
+    mode(unips) <- "character";
+    return(unips);
 }
 
 doString2EntrezMapping <- function(string.vec){
-  # db.path <- paste(lib.path, data.org, "/entrez_string.rds", sep="");
-  # db.map <-  readRDS(db.path);
-  db.map <-  queryGeneDB("entrez_string", data.org);
-  hit.inx <- match(string.vec, db.map[, "accession"]);
-  entrezs <- db.map[hit.inx, "gene_id"];
-  mode(entrezs) <- "character";
-  return(entrezs);
+   # db.path <- paste(lib.path, data.org, "/entrez_string.rds", sep="");
+   # db.map <-  readRDS(db.path);
+    db.map <-  queryGeneDB("entrez_string", data.org);
+    hit.inx <- match(string.vec, db.map[, "accession"]);
+    entrezs <- db.map[hit.inx, "gene_id"];
+    mode(entrezs) <- "character";
+    return(entrezs);
 }
 
 doEmblGene2EntrezMapping <- function(emblgene.vec){
-  # db.path <- paste(lib.path, data.org, "/entrez_embl_gene.rds", sep="");
-  # db.map <-  readRDS(db.path);
-  db.map <-  queryGeneDB("entrez_embl_gene", data.org);
-  hit.inx <- match(emblgene.vec, db.map[, "accession"]);
-  entrezs <- db.map[hit.inx, "gene_id"];
-  mode(entrezs) <- "character";
-  return(entrezs);
+    # db.path <- paste(lib.path, data.org, "/entrez_embl_gene.rds", sep="");
+    # db.map <-  readRDS(db.path);
+    db.map <-  queryGeneDB("entrez_embl_gene", data.org);
+    hit.inx <- match(emblgene.vec, db.map[, "accession"]);
+    entrezs <- db.map[hit.inx, "gene_id"];
+    mode(entrezs) <- "character";
+    return(entrezs);
 }
 
 doEmblProtein2EntrezMapping <- function(emblprotein.vec){
-  # db.path <- paste(lib.path, data.org, "/entrez_embl_protein.rds", sep="");
-  # db.map <-  readRDS(db.path);
-  db.map <-  queryGeneDB("entrez_embl_protein", data.org);
-  hit.inx <- match(emblprotein.vec, db.map[, "accession"]);
-  entrezs <- db.map[hit.inx, "gene_id"];
-  mode(entrezs) <- "character";
-  return(entrezs);
+    # db.path <- paste(lib.path, data.org, "/entrez_embl_protein.rds", sep="");
+    # db.map <-  readRDS(db.path);
+    db.map <-  queryGeneDB("entrez_embl_protein", data.org);
+    hit.inx <- match(emblprotein.vec, db.map[, "accession"]);
+    entrezs <- db.map[hit.inx, "gene_id"];
+    mode(entrezs) <- "character";
+    return(entrezs);
 }

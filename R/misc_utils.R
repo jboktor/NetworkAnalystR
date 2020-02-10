@@ -7,7 +7,7 @@
 # parse out return the a matrix containing the logFc, with rows named by gene ID
 # if no 2nd col (logFC), the value will be padded by 0s
 .parseListInput <- function(geneIDs){
-  
+
   spl <- unlist(strsplit(geneIDs, "\\//")[1]);
   spl <- spl[unlist(lapply(spl,function(x){!x %in% ""}))]
   spl <- lapply(spl,function(x){gsub("\\/", "",x)})
@@ -261,12 +261,12 @@ cleanMem <- function(n=10) { for (i in 1:n) gc() }
 
 # shorthand
 ShowMemoryUse <- function(..., n=30) {
-  library(pryr);
-  sink(); # make sure print to screen
-  print(mem_used());
-  print(sessionInfo());
-  print(.ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n));
-  print(warnings());
+    library(pryr);
+    sink(); # make sure print to screen
+    print(mem_used());
+    print(sessionInfo());
+    print(.ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n));
+    print(warnings());
 }
 
 firstup <- function(x) {
@@ -280,21 +280,21 @@ LoadCurrentSet <- function() {
 }
 
 PerformHeatmapEnrichment <- function(file.nm, fun.type, IDs){
-  if(IDs=="NA"){
-    if(anal.type=="onedata"){
-      gene.vec <- rownames(dataSet$sig.mat);
-    }else if(anal.type=="metadata"){
-      gene.vec <- rownames(meta.mat);
+    if(IDs=="NA"){
+        if(anal.type=="onedata"){
+            gene.vec <- rownames(dataSet$sig.mat);
+        }else if(anal.type=="metadata"){
+            gene.vec <- rownames(meta.mat);
+        }else{
+            gene.vec <- rownames(all.ent.mat);
+        }
     }else{
-      gene.vec <- rownames(all.ent.mat);
+        gene.vec <- unlist(strsplit(IDs, "; "));
     }
-  }else{
-    gene.vec <- unlist(strsplit(IDs, "; "));
-  }
-  sym.vec <- doEntrez2SymbolMapping(gene.vec);
-  names(gene.vec) <- sym.vec;
-  res <- PerformEnrichAnalysis(file.nm, fun.type, gene.vec);
-  return(res);
+    sym.vec <- doEntrez2SymbolMapping(gene.vec);
+    names(gene.vec) <- sym.vec;
+    res <- PerformEnrichAnalysis(file.nm, fun.type, gene.vec);
+    return(res);
 }
 
 PrepareEnrichNet<-function(netNm, type, overlapType){
@@ -317,142 +317,142 @@ PrepareEnrichNet<-function(netNm, type, overlapType){
       w[i,j] = overlap_ratio(geneSets[id[i]], geneSets[id[j]], overlapType)
     }
   }
-  wd <- melt(w);
-  wd <- wd[wd[,1] != wd[,2],];
-  wd <- wd[!is.na(wd[,3]),];
+    wd <- melt(w);
+    wd <- wd[wd[,1] != wd[,2],];
+    wd <- wd[!is.na(wd[,3]),];
+
+    g <- graph.data.frame(wd[,-3], directed=F);
+    if(type == "list"){
+        g <- delete.edges(g, E(g)[wd[,3] < 0.3]);
+    }else{
+        g <- delete.edges(g, E(g)[wd[,3] < 0.3]);
+    }
+    idx <- unlist(sapply(V(g)$name, function(x) which(x == id)));
+
+    V(g)$color <- ComputeColorGradient(-log(normalize(pvalue) + min(pvalue/2)), "black", F);
+    V(g)$colorw <- ComputeColorGradient(-log(normalize(pvalue) + min(pvalue/2)), "white", F);
   
-  g <- graph.data.frame(wd[,-3], directed=F);
-  if(type == "list"){
-    g <- delete.edges(g, E(g)[wd[,3] < 0.3]);
-  }else{
-    g <- delete.edges(g, E(g)[wd[,3] < 0.3]);
-  }
-  idx <- unlist(sapply(V(g)$name, function(x) which(x == id)));
+    cnt <- hits;
+    names(cnt) <- id;
+    cnt2 <- cnt[V(g)$name];
+
+    V(g)$size <- rescale(log(cnt2, base=10), 8, 32);
   
-  V(g)$color <- ComputeColorGradient(-log(normalize(pvalue) + min(pvalue/2)), "black", F);
-  V(g)$colorw <- ComputeColorGradient(-log(normalize(pvalue) + min(pvalue/2)), "white", F);
+    # layout
+    pos.xy <- layout.auto(g);
   
-  cnt <- hits;
-  names(cnt) <- id;
-  cnt2 <- cnt[V(g)$name];
+    # now create the json object
+    nodes <- vector(mode="list");
+    node.nms <- V(g)$name;
+    node.sizes <- V(g)$size;
+    node.cols <- V(g)$color;
+    node.colsw <- V(g)$colorw;
   
-  V(g)$size <- rescale(log(cnt2, base=10), 8, 32);
+    for(i in 1:length(node.sizes)){
+        nodes[[i]] <- list(
+            id = node.nms[i],
+            label=node.nms[i],
+            size = node.sizes[i],
+            true_size=node.sizes[i], 
+            colorb=node.cols[i],
+            colorw=node.colsw[i],
+            posx = pos.xy[i,1],
+            posy = pos.xy[i,2]
+        );
+    }
   
-  # layout
-  pos.xy <- layout.auto(g);
-  
-  # now create the json object
-  nodes <- vector(mode="list");
-  node.nms <- V(g)$name;
-  node.sizes <- V(g)$size;
-  node.cols <- V(g)$color;
-  node.colsw <- V(g)$colorw;
-  
-  for(i in 1:length(node.sizes)){
-    nodes[[i]] <- list(
-      id = node.nms[i],
-      label=node.nms[i],
-      size = node.sizes[i],
-      true_size=node.sizes[i], 
-      colorb=node.cols[i],
-      colorw=node.colsw[i],
-      posx = pos.xy[i,1],
-      posy = pos.xy[i,2]
-    );
-  }
-  
-  edge.mat <- get.edgelist(g);
-  edge.mat <- cbind(id=1:nrow(edge.mat), source=edge.mat[,1], target=edge.mat[,2]);
-  
-  # covert to json
-  bedges = stack(hits.query);
-  b.mat <- matrix(NA, nrow=nrow(bedges), ncol=2);
-  b.mat[,1] = bedges[,"values"];
-  b.mat[,2] = as.character(bedges[,"ind"]);
-  b.mat = b.mat[complete.cases(b.mat),]
-  colnames(b.mat) = c("source", "target");
-  bg <- graph.data.frame(b.mat, directed=F);
-  idx <- unlist(sapply(V(bg)$name, function(x) which(x == id)));
-  cols <- color_scale("red", "#E5C494");
-  
-  V(bg)$color[V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(-log(pvalue), "black", F);
-  V(bg)$colorw[V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(-log(pvalue), "white", F);
-  if(anal.type == "onedata"){
-    tbl = dataSet$resTable
-    tbl = tbl[which(doEntrez2SymbolMapping(rownames(tbl)) %in% V(bg)$name),]
-    expr.val = tbl[,selectedFactorInx];
-    expvals = expr.val;
-    V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
-    V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
-  }else if(anal.type == "genelist" && sum(all.prot.mat[,1]) != 0){
-    tbl = all.prot.mat
-    gene.nms = V(bg)$name[which(!V(bg)$name %in% rownames(enr.mat))]
-    tbl = tbl[which(rownames(tbl) %in% gene.nms),]
-    expr.val = as.vector(tbl);
-    expvals = expr.val;
-    V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
-    V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+    edge.mat <- get.edgelist(g);
+    edge.mat <- cbind(id=1:nrow(edge.mat), source=edge.mat[,1], target=edge.mat[,2]);
     
-  }else if(anal.type =="metadata"){
-    tbl = meta.mat.all
-    tbl = as.matrix(tbl[which(doEntrez2SymbolMapping(rownames(tbl)) %in% V(bg)$name),])
-    expr.val = tbl[,1];
-    expvals = expr.val;
-    V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
-    V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
-  }else{
-    expvals <- rep(0,length(V(bg)$color)); 
-    V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- "#00FFFF";
-    V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- "#668B8B"
-  }
+    # covert to json
+    bedges = stack(hits.query);
+    b.mat <- matrix(NA, nrow=nrow(bedges), ncol=2);
+    b.mat[,1] = bedges[,"values"];
+    b.mat[,2] = as.character(bedges[,"ind"]);
+    b.mat = b.mat[complete.cases(b.mat),]
+    colnames(b.mat) = c("source", "target");
+    bg <- graph.data.frame(b.mat, directed=F);
+    idx <- unlist(sapply(V(bg)$name, function(x) which(x == id)));
+    cols <- color_scale("red", "#E5C494");
+   
+    V(bg)$color[V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(-log(pvalue), "black", F);
+    V(bg)$colorw[V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(-log(pvalue), "white", F);
+    if(anal.type == "onedata"){
+        tbl = dataSet$resTable
+        tbl = tbl[which(doEntrez2SymbolMapping(rownames(tbl)) %in% V(bg)$name),]
+        expr.val = tbl[,selectedFactorInx];
+        expvals = expr.val;
+        V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+        V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+    }else if(anal.type == "genelist" && sum(all.prot.mat[,1]) != 0){
+        tbl = all.prot.mat
+        gene.nms = V(bg)$name[which(!V(bg)$name %in% rownames(enr.mat))]
+        tbl = tbl[which(rownames(tbl) %in% gene.nms),]
+        expr.val = as.vector(tbl);
+        expvals = expr.val;
+        V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+        V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+    
+    }else if(anal.type =="metadata"){
+        tbl = meta.mat.all
+        tbl = as.matrix(tbl[which(doEntrez2SymbolMapping(rownames(tbl)) %in% V(bg)$name),])
+        expr.val = tbl[,1];
+        expvals = expr.val;
+        V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+        V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- ComputeColorGradient(expr.val, "black", T);
+    }else{
+        expvals <- rep(0,length(V(bg)$color)); 
+        V(bg)$color[!V(bg)$name %in% rownames(enr.mat)] <- "#00FFFF";
+        V(bg)$colorw[!V(bg)$name %in% rownames(enr.mat)] <- "#668B8B"
+    }
+
+    V(bg)$size <- rescale(log(cnt2, base=10), 8, 24); 
+
+    # layout
+    pos.xy <- layout.auto(bg);
   
-  V(bg)$size <- rescale(log(cnt2, base=10), 8, 24); 
+    # now create the json object
+    bnodes <- vector(mode="list");
+    node.nms <- V(bg)$name;
+    node.sizes <- V(bg)$size;
+    node.cols <- V(bg)$color;
+    node.colsw <- V(bg)$colorw;
   
-  # layout
-  pos.xy <- layout.auto(bg);
+    shapes <- rep("circle", length(node.nms));
+    hit.inx <- node.nms %in% b.mat[,"source"];
+    shapes[hit.inx] <- "gene";
+    node.lbls = doEntrez2SymbolMapping(node.nms)
   
-  # now create the json object
-  bnodes <- vector(mode="list");
-  node.nms <- V(bg)$name;
-  node.sizes <- V(bg)$size;
-  node.cols <- V(bg)$color;
-  node.colsw <- V(bg)$colorw;
-  
-  shapes <- rep("circle", length(node.nms));
-  hit.inx <- node.nms %in% b.mat[,"source"];
-  shapes[hit.inx] <- "gene";
-  node.lbls = doEntrez2SymbolMapping(node.nms)
-  
-  for(i in 1:length(node.sizes)){
-    bnodes[[i]] <- list(
-      id = node.nms[i],
-      label=node.lbls[i], 
-      size=node.sizes[i], 
-      colorb=node.cols[i],
-      colorw=node.colsw[i],
-      true_size=node.sizes[i], 
-      type=shapes[i],
-      exp= unname(expvals[i]),
-      posx = pos.xy[i,1],
-      posy = pos.xy[i,2]
-    );
-  }
-  
-  ppi.comps <- vector(mode="list");
-  current.net.nm <<- "enrNet"
-  ppi.comps[["enrNet"]] <- bg;
-  ppi.comps <<- ppi.comps
-  
-  bedge.mat <- get.edgelist(bg);
-  bedge.mat <- cbind(id=1:nrow(bedge.mat), source=bedge.mat[,1], target=bedge.mat[,2]);
-  require(RJSONIO);
-  initsbls = doEntrez2SymbolMapping(list.genes)
-  names(initsbls) = list.genes
-  netData <- list(nodes=nodes, edges=edge.mat, bnodes=bnodes, bedges=bedge.mat, enr=enr.mat, id=rownames(enr.mat), sizes=listSizes, hits=hits.query, genelist=initsbls);
-  netName = paste0(netNm, ".json");
-  sink(netName);
-  cat(toJSON(netData));
-  sink();
+    for(i in 1:length(node.sizes)){
+        bnodes[[i]] <- list(
+            id = node.nms[i],
+            label=node.lbls[i], 
+            size=node.sizes[i], 
+            colorb=node.cols[i],
+            colorw=node.colsw[i],
+            true_size=node.sizes[i], 
+            type=shapes[i],
+            exp= unname(expvals[i]),
+            posx = pos.xy[i,1],
+            posy = pos.xy[i,2]
+        );
+    }
+
+    ppi.comps <- vector(mode="list");
+    current.net.nm <<- "enrNet"
+    ppi.comps[["enrNet"]] <- bg;
+    ppi.comps <<- ppi.comps
+
+    bedge.mat <- get.edgelist(bg);
+    bedge.mat <- cbind(id=1:nrow(bedge.mat), source=bedge.mat[,1], target=bedge.mat[,2]);
+    require(RJSONIO);
+    initsbls = doEntrez2SymbolMapping(list.genes)
+    names(initsbls) = list.genes
+    netData <- list(nodes=nodes, edges=edge.mat, bnodes=bnodes, bedges=bedge.mat, enr=enr.mat, id=rownames(enr.mat), sizes=listSizes, hits=hits.query, genelist=initsbls);
+    netName = paste0(netNm, ".json");
+    sink(netName);
+    cat(toJSON(netData));
+    sink();
 }
 
 GetListEnrGeneNumber <- function(){
@@ -517,7 +517,7 @@ GetListEnrGeneNumber <- function(){
       # convert to entrez
       expr.val <- gene.mat[,1];
       en.ids <- rownames(gene.mat);
-      
+
       names(expr.val) <- en.ids;
       newDat[[dataNm]] <- expr.val;
       names(en.ids) <- doEntrez2SymbolMapping(en.ids)
@@ -528,7 +528,7 @@ GetListEnrGeneNumber <- function(){
         size = length(en.ids)
       )
     }
-  }
+}
   list.genes <<- all.enIDs;
   listSizes <<- listSizes;
 }
@@ -555,18 +555,18 @@ PerformListEnrichmentView <- function(file.nm, fun.type, netNm, IDs){
 overlap_ratio <- function(x, y, type) {
   x <- unlist(x)
   y <- unlist(y)
-  if(type == "mixed"){
-    res = 0.5 * length(intersect(x, y))/length(unique(y)) + 0.5 * length(intersect(x, y))/length(unique(c(x,y)))
-  }else if(type == "overlap"){
-    if(length(x)>length(y)){
-      res=length(intersect(x, y))/length(unique(y))
-    }else{
-      res=length(intersect(x, y))/length(unique(x))
-    }
+if(type == "mixed"){
+ res = 0.5 * length(intersect(x, y))/length(unique(y)) + 0.5 * length(intersect(x, y))/length(unique(c(x,y)))
+}else if(type == "overlap"){
+  if(length(x)>length(y)){
+    res=length(intersect(x, y))/length(unique(y))
   }else{
-    res=length(intersect(x, y))/length(unique(c(x,y)))
+    res=length(intersect(x, y))/length(unique(x))
   }
-  return(res)
+}else{
+    res=length(intersect(x, y))/length(unique(c(x,y)))
+}
+return(res)
 }
 
 color_scale <- function(c1="grey", c2="red") {
@@ -595,7 +595,7 @@ PerformSetOperation_ListEnr <- function(nms, operation, refNm){
   my.vec <- all.nms[include.inx];
   if(anal.type == "onedata"){
     my.vec = c("1");
-  }
+}
   if(operation == "diff"){ # make sure reference is the first
     inx <- which(my.vec == refNm);
     my.vec <- my.vec[-inx];
@@ -604,8 +604,8 @@ PerformSetOperation_ListEnr <- function(nms, operation, refNm){
   ids.list <- list()
   for(i in 1:length(my.vec)){
     if(anal.type != "onedata"){
-      dataSet <- readRDS(my.vec[i]);
-    }
+    dataSet <- readRDS(my.vec[i]);
+}
     if(operation == "diff"){
       ids.list[[i]]=dataSet$GeneAnotDB[,"gene_id"]
       #com.ids <- setdiff(com.ids, dataSet$GeneAnotDB[,"gene_id"]);
@@ -635,7 +635,7 @@ PerformSetOperation_ListEnr <- function(nms, operation, refNm){
 }
 
 PerformSetOperation_DataEnr <- function(nms, operation, refNm){
-  
+
   my.vec <- nms
   if(operation == "diff"){ # make sure reference is the first
     inx <- which(my.vec == refNm);
@@ -643,13 +643,13 @@ PerformSetOperation_DataEnr <- function(nms, operation, refNm){
   }
   com.ids <- NULL;
   ids.list <- list()
-  if(anal.type == "onedata"){
+    if(anal.type == "onedata"){
     my.vec = "dat"
-  }
+}
   for(nm in my.vec){
-    if(anal.type != "onedata"){
-      dataSet <- readRDS(nm);
-    }
+        if(anal.type != "onedata"){
+    dataSet <- readRDS(nm);
+}
     if(operation == "diff"){
       ids.list[[nm]]=rownames(dataSet$sig.mat);
       #com.ids <- setdiff(com.ids, dataSet$GeneAnotDB[,"gene_id"]);
@@ -679,10 +679,10 @@ rescale <- function(x, from, to){
 }
 
 GetDataListNames <- function(){
-  return(names(mdata.all));
+    return(names(mdata.all));
 }
 
 normalize <- function(x)
 {
-  return((x- min(x)) /(max(x)-min(x)))
+    return((x- min(x)) /(max(x)-min(x)))
 }
