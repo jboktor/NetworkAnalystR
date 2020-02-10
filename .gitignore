@@ -24,7 +24,9 @@ vignettes/*.pdf
 *.knit.md
 
 # Data
-data
+data/test/
+data/gene-id-mapping/
+data/sqlite/
 
 # Work In Progress
 rmd/code-optimization.Rmd
