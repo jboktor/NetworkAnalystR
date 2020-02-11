@@ -22,3 +22,8 @@ Accomplished Today:
 + Added data files (<50 Mb)
 + Submitted issue to dependency {PCSF} to switch from biocLite to BiocManager; so users can bring-in dependency with our 📦
 + Used suggested workflow for {sinew}, an extension of the alternative documentation workflow described in the R packages book by Hadley Wickham
+
+Next Steps:
+
++ Test/Fix single-function scripts
++ Document source code while Test/Fix single-function script
