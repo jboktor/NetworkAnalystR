@@ -13,7 +13,36 @@ Encoding: UTF-8
 LazyData: true
 biocViews:
 Imports:
-        S4Vectors,igraph,stringi,methods,BiocGenerics,utils,AnnotationDbi,rlang,data.table,backports,timeDate,h2o,dplyr,ipred,globals,gdata,git2r,purrr,fs,DBI,readr,magick,DelayedArray,R.utils,jsonlite,stats,matrixStats,fields,RJSONIO
+    S4Vectors,
+    igraph,
+    stringi,
+    methods,
+    BiocGenerics,
+    utils,
+    AnnotationDbi,
+    rlang,
+    data.table,
+    backports,
+    timeDate,
+    h2o,
+    dplyr,
+    ipred,
+    globals,
+    gdata,
+    git2r,
+    purrr,
+    fs,
+    DBI,
+    readr,
+    magick,
+    DelayedArray,
+    R.utils,
+    jsonlite,
+    stats,
+    matrixStats,
+    fields,
+    RJSONIO,
+    Cairo
 Suggests: testthat, knitr, rmarkdown, devtools, testthat, reshape2
 Depends: R (>= 3.6.1)
 VignetteBuilder: knitr
