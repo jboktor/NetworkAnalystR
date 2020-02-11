@@ -8,6 +8,19 @@
 # Testing Functions Files
 data.proc.rds
 data_processed.csv
+annotation.rds
+data_normalized.csv
+libsize_0_dpi72.png
+orig.data.anot
+qc_boxplot_0_dpi72.png
+qc_density_0_dpi72.png
+qc_norm_boxplot_0_dpi72.png
+qc_norm_density_0_dpi72.png
+qc_norm_meanstd_0_dpi72.png
+qc_norm_pca_0_dpi72.png
+qc_pca_0_dpi72.png
+rna_b_omicsanalyst.json
+
 
 # User-specific files
 .Ruserdata
