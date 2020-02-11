@@ -5,6 +5,10 @@
 # Session Data Files
 .RData
 
+# Testing Functions Files
+data.proc.rds
+data_processed.csv
+
 # User-specific files
 .Ruserdata
 
