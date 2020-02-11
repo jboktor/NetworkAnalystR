@@ -1,39 +1,21 @@
 Package: NetworkAnalystR
-Title: A visual analytics platform for comprehensive gene expression profiling & meta-analysis .
+Title: A visual analytics platform for comprehensive gene expression
+        profiling & meta-analysis .
 Version: 0.0.0.9000
-Authors@R: c(person("Jianguo", "Xia", email = "jeff.xia@mcgill.ca", role = "aut"), person("Matthew", "Oldach", email = "matthew.oldachh@mcgill.ca", role=c("aut", "cre")))
+Authors@R: c(person("Jianguo", "Xia", email = "jeff.xia@mcgill.ca", role =
+        "aut"), person("Matthew", "Oldach", email =
+        "matthew.oldachh@mcgill.ca", role=c("aut", "cre")))
 Author: Jianguo Xia [aut, cre], Matthew Oldach [aut]
-Description: This package contains the R functions and libraries underlying the popular NetworkAnalyst web server.
+Description: This package contains the R functions and libraries underlying
+        the popular NetworkAnalyst web server.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 biocViews:
 Imports:
-    RJSONIO,
-    RColorBrewer,
-    limma,
-    preprocessCore,
-    edgeR,
-    lattice,
-    ggplot2,
-    reshape,
-    ggrepel,
-    Rtsne,
-    Cairo,
-    igraph,
-    fgsea,
-    RSQLite,
-    PCSF,
-    Seurat
-Suggests: 
-    testthat,
-    knitr,
-    rmarkdown,
-    devtools,
-    testthat,
-    reshape2
-Depends:
-    R (>= 3.6.1)
+        S4Vectors,igraph,stringi,methods,BiocGenerics,utils,AnnotationDbi,rlang,data.table,backports,timeDate,h2o,dplyr,ipred,globals,gdata,git2r,purrr,fs,DBI,readr,magick,DelayedArray,R.utils,jsonlite,stats,matrixStats,fields,RJSONIO
+Suggests: testthat, knitr, rmarkdown, devtools, testthat, reshape2
+Depends: R (>= 3.6.1)
 VignetteBuilder: knitr
 URL: https://www.networkanalyst.ca/
 BugReports: https://github.com/xia-lab/NetworkAnalystR/issues
