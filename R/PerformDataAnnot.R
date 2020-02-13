@@ -89,7 +89,8 @@ PerformDataAnnot <- function(org, dataType, idType, lvlOpt){
     lvls = paste("Two factors found -", conc1, conc2)
   }
   summaryVec <<- c(matched.len, perct, length(anot.id), sum(!hit.inx), ncol(dataSet$data.anot), ncol(dataSet$meta.info), sprintf("%4.2e", signif(totalCount ,3)), sprintf("%4.2e",signif(avgCount, 3)), sprintf("%4.2e",signif(minCount, 3)), sprintf("%4.2e",signif(maxCount,3)), lvls)  
-  return(matched.len);   
+  print(matched.len);
+  return(dataSet)
 }
 
 #' @title FUNCTION_TITLE
