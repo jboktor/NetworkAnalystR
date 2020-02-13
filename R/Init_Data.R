@@ -43,6 +43,9 @@ Init.Data<-function(path="../../"){
   }else if(file.exists("~/Downloads/sqlite")){
     sqlite.path <<- "~/Documents/Projects/sqlite/networkanalyst/"; #soufanom local
     genesdb.path <<- "~/Downloads/sqlite/"
+  } else if(file.exists("~/Documents/sqlite")){
+    sqlite.path <<- "~/Documents/gene-id-mapping/"; #moldach local
+    genesdb.path <<- "~/Documents/sqlite/"
   }
   
   lib.path <<- paste0(path, "data/");
@@ -55,5 +58,6 @@ Init.Data<-function(path="../../"){
   require('Cairo');
   CairoFonts("Arial:style=Regular","Arial:style=Bold","Arial:style=Italic","Helvetica","Symbol")
   require('igraph');
-  print("called networkanalyst init!");
+  print("NetworkAnalyst R objects initialized ...");
+  return(dataSet)
 }
