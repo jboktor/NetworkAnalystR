@@ -49,13 +49,13 @@ ReadTabExpressData <- function(fileName) {
   current.msg <<- paste(msg, collapse="; ");
   data.proc <- RemoveDuplicates(int.mat, "mean", quiet=T);
   dataSet$smpl.num <- ncol(data.proc);
+  dataSet$data.proc <- data.proc;
   
   # save processed data for download user option
   write.csv(data.proc, file="data_processed.csv");
   saveRDS(data.proc, "data.proc.rds");
   
   dataSet <<- dataSet;
-  return (1);
 }
 
 #' @title .readDataTable
