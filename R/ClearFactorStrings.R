@@ -1,12 +1,9 @@
-# utils to remove from
-# within, leading and trailing spaces
-# remove /
 #' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
+#' @description utils to remove from within
 #' @param cls.nm PARAM_DESCRIPTION
 #' @param query PARAM_DESCRIPTION
 #' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
+#' @details removes leading and trailing spaces
 #' @examples 
 #' \dontrun{
 #' if(interactive()){
